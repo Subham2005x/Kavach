@@ -1,7 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-html {
-  zoom: 2.5;  /* Matches your screenshot zoom perfectly */
-}
 
 * {
   margin: 0;
@@ -93,6 +90,7 @@ body {
 
 .highlight {
   color: #3b82f6;
+  font-size: 2rem;
 }
 
 
@@ -106,7 +104,7 @@ body {
 .nav a {
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 500;
   padding: 8px 0;
   transition: all 0.3s ease;
@@ -138,7 +136,7 @@ body {
 
 .btn-sm {
   padding: 8px 24px;
-  font-size: 14px;
+  font-size: 1.2rem;
 }
 
 
@@ -409,7 +407,7 @@ body {
 
 /* Sections */
 .section {
-  padding: 96px 0;
+  padding: 50px 0;
 }
 
 
@@ -426,14 +424,14 @@ body {
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 9999px;
   color: #60a5fa;
-  font-size: 0.875rem;
+  font-size: 1.75rem;
   font-weight: 600;
   margin-bottom: 24px;
 }
 
 
 .section-title {
-  font-size: clamp(3rem, 8vw, 6rem);
+  font-size: clamp(3rem, 8vw, 4.5rem);
   font-weight: 900;
   margin-bottom: 16px;
   background: linear-gradient(135deg, white, #e2e8f0);
@@ -609,8 +607,9 @@ body {
 
 
 .features-right {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr ;
+
   gap: 16px;
 }
 
@@ -732,7 +731,8 @@ body {
 
 /* CTA */
 .cta-section {
-  padding: 96px 0;
+  
+  padding: 50px 0;
   position: relative;
   overflow: hidden;
 }
@@ -760,7 +760,7 @@ body {
 
 
 .cta-content h2 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
   font-weight: 900;
   margin-bottom: 24px;
 }

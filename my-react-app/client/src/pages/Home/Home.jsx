@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';  // ← ADD THIS LINE
 import './Home.css';
 
-
 // Your existing code...
 
 
@@ -42,10 +41,10 @@ const Home = () => {
                 <div className="container">
                     <div className="header-content">
                         <div className="logo">
-                            <div className="logo-icon">
+                            {/* <div className="logo-icon">
                                 <span className="mountain">⛰️</span>
                                 
-                            </div>
+                            </div> */}
                             <h1>🛡<span className="highlight">Kavach</span></h1>
                         </div>
                         <nav className="nav">
@@ -303,7 +302,6 @@ const Home = () => {
             <section className="cta-section">
                 <div className="container">
                     <div className="cta-content">
-                        <div className="cta-icon">🛡</div>
                         <h2>Ready to Protect Your Community?</h2>
                         <p>Start monitoring mountain hazards today. Get real-time risk assessments and early warnings for your region.</p>
                         <div className="cta-buttons">
