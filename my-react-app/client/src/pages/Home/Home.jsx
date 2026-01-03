@@ -1,5 +1,5 @@
 // src/pages/Home.jsx - EXACT MATCH to your screenshots
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; 
 import { Link } from 'react-router-dom';  // ← ADD THIS LINE
 import './Home.css';
@@ -9,6 +9,7 @@ import './Home.css';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     return (
         <>
@@ -47,12 +48,22 @@ const Home = () => {
                             </div> */}
                             <h1>🛡<span className="highlight">Kavach</span></h1>
                         </div>
-                        <nav className="nav">
-                            <a href="#hazards">Hazards</a>
-                            <a href="#features">Features</a>
-                            <a href="#how-it-works">How It Works</a>
+                        <button 
+                            className="mobile-menu-toggle" 
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? '✕' : '☰'}
+                        </button>
+                        <nav className={`nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+                            {/* <a href="#hazards" onClick={() => setIsMobileMenuOpen(false)}>Hazards</a>
+                            <a href="#features" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
+                            <a href="#how-it-works" onClick={() => setIsMobileMenuOpen(false)}>How It Works</a> */}
+                            <button className="btn-primary btn-sm nav-btn-mobile" onClick={() => navigate('/login')}>
+                                Try Now
+                            </button>
                         </nav>
-                        <button className="btn-primary btn-sm" onClick={() => navigate('/login')}>
+                        <button className="btn-primary btn-sm btn-desktop" onClick={() => navigate('/login')}>
   Try Now
 </button>
 

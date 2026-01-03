@@ -153,19 +153,19 @@ const Login = () => {
               <span className="mountain">⛰️</span>
               <span className="shield">🛡️</span>
             </div>
-            <h1>MountainShield</h1>
+            <h1>Kavach</h1>
           </div>
           
           {isRegister ? (
             <>
               <h2>Start Protecting Your</h2>
-              <h3>Join Thousands who trust MountainShield</h3>
+              <h3>Join Thousands who trust Kavach</h3>
               <p>for real-time hazard monitoring & AI-powered alerts</p>
             </>
           ) : (
             <>
               <h2>Welcome Back to</h2>
-              <h3>MountainShield</h3>
+              <h3>Kavach</h3>
               <p>Continue monitoring mountain hazards and protecting your community with AI-powered risk assessment</p>
             </>
           )}

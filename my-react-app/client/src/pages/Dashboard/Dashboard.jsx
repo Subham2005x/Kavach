@@ -8,6 +8,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -44,12 +45,19 @@ const Dashboard = () => {
   return (
     <div className="dashboard">
       {/* Sidebar */}
-      <aside className="dashboard-sidebar">
+      <aside className={`dashboard-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
           <div className="logo-section">
             <div className="logo-icon">🏔️</div>
             <h2>Kavach</h2>
           </div>
+          <button 
+            className="mobile-close-btn" 
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
         </div>
         
         <nav className="sidebar-nav">
@@ -77,8 +85,17 @@ const Dashboard = () => {
         {/* Header */}
         <header className="dashboard-header">
           <div className="header-left">
-            <h1>Welcome back, {user?.displayName || user?.email?.split('@')[0] || 'User'}!</h1>
-            <p>Here's what's happening with your account today.</p>
+            <button 
+              className="mobile-menu-btn" 
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              ☰
+            </button>
+            <div>
+              <h1>Welcome back, {user?.displayName || user?.email?.split('@')[0] || 'User'}!</h1>
+              <p>Here's what's happening with your account today.</p>
+            </div>
           </div>
           <div className="header-right">
             <div className="user-profile">
