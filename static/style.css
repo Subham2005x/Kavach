@@ -361,3 +361,86 @@ canvas {
     box-sizing: border-box; /* Include padding in width */
     z-index: 1000; /* Ensure footer is above other content */
 }
+
+.danger-btn {
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.custom-select {
+    background: #4a5568;
+    color: white;
+    border: 1px solid #718096;
+    padding: 5px;
+    width: 100%;
+}
+
+/* Sidebar Layout Fix */
+.sidebar {
+    width: 300px;
+    height: 100vh;
+    background: #2d3748;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.sidebar-content {
+    padding: 20px;
+    overflow-y: auto; /* Allows scrolling if sliders exceed height */
+    flex-grow: 1;
+}
+
+.sidebar-section {
+    margin-bottom: 25px;
+    border-bottom: 1px solid #4a5568;
+    padding-bottom: 15px;
+}
+
+/* Dashboard Grid Fix */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Two columns */
+    grid-gap: 20px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}
+
+.card {
+    background: #2d3748;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* AI Chat Box Styling */
+.chat-box {
+    background: #1a202c;
+    border-radius: 6px;
+    padding: 12px;
+    height: 120px;
+    overflow-y: auto;
+    font-size: 0.9em;
+    border-left: 4px solid #48bb78;
+    margin-bottom: 10px;
+}
+
+/* Slider Alignment */
+.slider-group {
+    margin: 15px 0;
+}
+.slider-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.85em;
+}
+.slider-group input {
+    width: 100%;
+}

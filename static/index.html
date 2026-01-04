@@ -9,127 +9,111 @@
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
+        <aside class="sidebar">
             <div class="logo">
                 <img src="https://img.icons8.com/ios-filled/50/ffffff/mountain--v1.png" alt="MountainGuard Logo">
-                MountainGuard
+                <span>MountainGuard</span>
             </div>
-            <div class="menu-item active">Disaster Risk Intelligence</div>
 
-            <div class="map-layers">
-                <h3>Map Layers</h3>
-                <label class="switch">
-                    <input type="checkbox" id="landslide-layer-toggle" checked>
-                    <span class="slider round"></span>
-                    Landslide Zones
-                </label>
-                <label class="switch">
-                    <input type="checkbox" id="flood-layer-toggle">
-                    <span class="slider round"></span>
-                    Flood Risk Areas
-                </label>
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <label for="language-toggle">Language</label>
+                    <select id="language-toggle" class="custom-select">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="ne">नेपाली (Nepali)</option>
+                    </select>
                 </div>
 
-            <div class="simulation-mode">
-                <h3>Simulation Mode</h3>
-                <p>Test rainfall scenarios</p>
-                <h4>Quick Scenarios</h4>
-                <div class="scenario-buttons">
-                    <button data-intensity="10" data-duration="6">Light Rain</button>
-                    <button data-intensity="50" data-duration="24">Moderate Rain</button>
-                    <button data-intensity="150" data-duration="48">Extreme Rain</button>
+                <div class="sidebar-section">
+                    <h3>Map Layers</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="landslide-layer-toggle" checked>
+                        <span class="slider round"></span> Landslide Zones
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="sentinel-layer-toggle">
+                        <span class="slider round"></span> Sentinel-2 Satellite
+                    </label>
                 </div>
-                <div class="slider-group">
-                    <label for="rainfall-intensity">Rainfall Intensity (mm/hr): <span id="rainfall-value">50</span></label>
-                    <input type="range" id="rainfall-intensity" min="0" max="200" value="50">
+
+                <div class="sidebar-section simulation-controls">
+                    <h3>Simulation Mode</h3>
+                    <div class="scenario-buttons">
+                        <button data-intensity="10" data-duration="6">Light</button>
+                        <button data-intensity="150" data-duration="48">Extreme</button>
+                    </div>
+                    
+                    <div class="slider-group">
+                        <label>Rainfall: <span id="rainfall-value">50</span> mm/hr</label>
+                        <input type="range" id="rainfall-intensity" min="0" max="200" value="50">
+                    </div>
+                    <div class="slider-group">
+                        <label>Duration: <span id="duration-value">24</span> hrs</label>
+                        <input type="range" id="duration-hours" min="1" max="72" value="24">
+                    </div>
+                    <div class="slider-group">
+                        <label>Soil Moisture: <span id="soil-moisture-value">0.5</span></label>
+                        <input type="range" id="soil-moisture" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                    <div class="slider-group">
+                        <label>Slope Angle: <span id="slope-angle-value">30</span>°</label>
+                        <input type="range" id="slope-angle" min="0" max="60" value="30">
+                    </div>
+                    <button id="start-simulation-btn" class="primary-btn">Start Simulation</button>
                 </div>
-                <div class="slider-group">
-                    <label for="duration-hours">Duration (hours): <span id="duration-value">24</span></label>
-                    <input type="range" id="duration-hours" min="1" max="72" value="24">
-                </div>
-                <div class="slider-group">
-                    <label for="soil-moisture">Soil Moisture (0-1): <span id="soil-moisture-value">0.5</span></label>
-                    <input type="range" id="soil-moisture" min="0" max="1" step="0.05" value="0.5">
-                </div>
-                <div class="slider-group">
-                    <label for="slope-angle">Slope Angle (degrees): <span id="slope-angle-value">30</span></label>
-                    <input type="range" id="slope-angle" min="0" max="60" value="30">
-                </div>
-                <button id="start-simulation-btn">Start Simulation</button>
+
+                <button id="report-incident-btn" class="danger-btn">⚠️ Report Landslide</button>
             </div>
-        </div>
+        </aside>
 
-        <div class="main-content">
-            <div class="header">
+        <main class="main-content">
+            <header class="header">
                 <div class="search-bar">
                     <input type="text" placeholder="Search mountain zones...">
                     <button>Search</button>
                 </div>
-                <div class="live-status">LIVE</div>
-                <div class="lang-selector">EN</div>
-            </div>
+                <div class="status-indicators">
+                    <div class="live-status">LIVE</div>
+                    <div id="selected-coords">Lat: --, Lon: --</div>
+                </div>
+            </header>
 
             <div class="dashboard-grid">
-                <div class="map-container">
+                <div class="map-container card">
                     <div id="map"></div>
-                    <div class="location-picker">
-                        <h3>Select a Location</h3>
-                        <p>Click on a risk zone on the map to view detailed analysis</p>
-                        <div id="selected-coords">Lat: --, Lon: --</div>
+                </div>
+
+                <div class="card ai-insight-card">
+                    <h3>AI Risk Analysis (Gemini)</h3>
+                    <div id="risk-explanation-text" class="chat-box">
+                        <p class="placeholder-text">Click map to generate expert insight...</p>
+                    </div>
+                    <div class="chart-container mini-chart">
+                        <canvas id="explanationChart"></canvas>
                     </div>
                 </div>
 
-                <div class="hazard-breakdown-card card">
+                <div class="card hazard-card">
                     <h3>Hazard Breakdown</h3>
-                    <div class="chart-container" style="height:200px; width:100%;">
+                    <div class="chart-container">
                         <canvas id="hazardDistributionChart"></canvas>
                     </div>
-                    <div class="top-risk-factors">
-                        <h4>Top Risk Factors</h4>
-                        <ul>
-                            <li>Rainfall</li>
-                            <li>Slope</li>
-                            <li>Soil Type</li>
-                            <li>Drainage</li>
-                        </ul>
+                </div>
+
+                <div class="card profile-card">
+                    <h3>Terrain Elevation Profile</h3>
+                    <div class="chart-container">
+                        <canvas id="terrainProfileChart"></canvas>
                     </div>
                 </div>
 
-                <div class="risk-progression-card card">
-                    <h3>Risk Progression vs Rainfall</h3>
-                    <div class="chart-container" style="height:200px; width:100%;">
-                        <canvas id="riskProgressionChart"></canvas>
-                    </div>
+                <div class="early-warning-card card full-width">
+                    <span class="alert-icon">⚠️</span>
+                    <p id="alert-recommendation">System Ready. Select a location to begin analysis.</p>
                 </div>
-
-                <div class="weather-card card">
-                    <h3>Current Weather</h3>
-                    <p id="current-temp">18°C</p>
-                    <div class="weather-details">
-                        <span>Humidity: <span id="current-humidity">78%</span></span>
-                        <span>Rainfall: <span id="current-rainfall">45mm</span></span>
-                        <span>Wind: <span id="current-wind">12km/h</span></span>
-                    </div>
-                    <p>Rainfall Trend: <span id="rainfall-trend">Increasing</span></p>
-                    <div class="weather-forecast">
-                        <h4>5-Day Forecast</h4>
-                        <div class="forecast-day">Mon (18°C, 42mm)</div>
-                        <div class="forecast-day">Tue (16°C, 78mm)</div>
-                        <div class="forecast-day">Wed (15°C, 35mm)</div>
-                        <div class="forecast-day">Thu (17°C, 20mm)</div>
-                        <div class="forecast-day">Fri (20°C, 12mm)</div>
-                    </div>
-                </div>
-
-                <div class="early-warning-card card">
-                    <h3>Early Warning Alerts</h3>
-                    <div class="alert-item">
-                        <span class="alert-icon">⚠️</span>
-                        <p>Flash Flood Warning <br> <span>Heavy rainfall expected in Tatopani. Evacuate low-lying areas</span></p>
-                    </div>
-                    </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>

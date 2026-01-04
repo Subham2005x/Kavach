@@ -1,187 +1,112 @@
+import os
+import math
+import joblib
+import httpx
 import numpy as np
-import pandas as pd
-from fastapi import FastAPI, HTTPException
+import google.generativeai as genai
+from fastapi import FastAPI, Body
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-import joblib
-import os
-from typing import List, Dict
-import joblib
-import numpy as np
-import pandas as pd
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import os
 
-# --- 1. Initialize FastAPI ---
-app = FastAPI(title="MountainGuard AI Engine", version="2.0.0")
+# --- 1. CONFIG & API KEYS ---
+# Replace with your actual Gemini API Key
+genai.configure(api_key="AIzaSyDUDcWnn-Srl3hvcur3m-ETV41OV-ZiJak")
+gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
-# --- 2. Define Data Schemas for the Frontend Sliders ---
+app = FastAPI()
+MODEL_DIR = "ml_models"
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+# --- 2. SCHEMAS ---
 class SimulationInput(BaseModel):
     lat: float
     lon: float
-    rainfall_intensity: float    # mm/hr
+    rainfall_intensity: float    
     duration_hours: int
-    soil_moisture: float         # 0.0 - 1.0 (normalized)
-    slope_angle: float           # Degrees (0-90)
-    # Add more features for ML heavy prediction if available from frontend
-    elevation: float = 0         # Meters (default for now)
-    drainage_density: float = 0  # e.g., km/km^2 (default for now)
+    soil_moisture: float         
+    slope_angle: float = 0.0     
+    elevation: float = 0.0       
+    drainage_density: float = 1.5 
+    use_live_weather: bool = False
 
-class BatchSimulationInput(BaseModel):
-    locations: List[SimulationInput]
-
-# --- 3. Mock & Pre-train Model Setup (using joblib for persistence) ---
-
-# Define paths for models and scalers
-MODEL_DIR = "ml_models"
-os.makedirs(MODEL_DIR, exist_ok=True) # Ensure directory exists
-
-LANDSLIDE_MODEL_PATH = os.path.join(MODEL_DIR, "landslide_classifier.joblib")
-FLOOD_MODEL_PATH = os.path.join(MODEL_DIR, "flood_regressor.joblib")
-SCALER_PATH = os.path.join(MODEL_DIR, "scaler.joblib")
-
-
-# Function to train and save dummy models if they don't exist
-def train_and_save_dummy_models():
-    print("Checking for pre-trained models...")
-    if not os.path.exists(LANDSLIDE_MODEL_PATH) or \
-       not os.path.exists(FLOOD_MODEL_PATH) or \
-       not os.path.exists(SCALER_PATH):
-        print("Pre-trained models not found. Training dummy models...")
-
-        # Landslide Classifier: Predicts High/Low susceptibility
-        # Features: soil_moisture, slope_angle, rainfall_intensity, elevation, drainage_density
-        X_landslide = pd.DataFrame({
-            'soil_moisture': np.random.rand(100) * 0.8 + 0.1, # 0.1 to 0.9
-            'slope_angle': np.random.rand(100) * 50 + 5, # 5 to 55 degrees
-            'rainfall_intensity': np.random.rand(100) * 100 + 10, # 10 to 110 mm/hr
-            'elevation': np.random.rand(100) * 3000 + 500, # 500 to 3500m
-            'drainage_density': np.random.rand(100) * 2 + 0.5 # 0.5 to 2.5
-        })
-        # Dummy target: High risk if slope and rainfall are high, or soil is saturated
-        y_landslide = ((X_landslide['slope_angle'] > 30) & (X_landslide['rainfall_intensity'] > 60) |
-                       (X_landslide['soil_moisture'] > 0.8)).astype(int)
-
-        landslide_clf = RandomForestClassifier(n_estimators=100, random_state=42)
-        landslide_clf.fit(X_landslide, y_landslide)
-        joblib.dump(landslide_clf, LANDSLIDE_MODEL_PATH)
-        print("Landslide Classifier trained and saved.")
-
-        # Flood Regressor: Predicts a flood risk score (0-100)
-        # Features: rainfall_intensity, duration_hours, elevation, drainage_density
-        X_flood = pd.DataFrame({
-            'rainfall_intensity': np.random.rand(100) * 150 + 20, # 20 to 170 mm/hr
-            'duration_hours': np.random.randint(1, 72, 100),
-            'elevation': np.random.rand(100) * 1000 + 100, # 100 to 1100m (lower elevation for floods)
-            'drainage_density': np.random.rand(100) * 3 + 1 # 1 to 4
-        })
-        # Dummy target: Flood risk increases with rainfall, duration, and lower elevation/drainage
-        y_flood = (X_flood['rainfall_intensity'] * X_flood['duration_hours'] / 5 +
-                   (1000 - X_flood['elevation']) / 20 +
-                   X_flood['drainage_density'] * 5).apply(lambda x: min(100, x))
-
-        flood_regressor = RandomForestRegressor(n_estimators=100, random_state=42)
-        flood_regressor.fit(X_flood, y_flood)
-        joblib.dump(flood_regressor, FLOOD_MODEL_PATH)
-        print("Flood Regressor trained and saved.")
-
-        # Scaler for consistent input processing
-
-# --- 4. Logic for Prediction Engine ---
-class HazardModel:
+# --- 3. SERVICES ---
+class ElevationService:
     def __init__(self):
-        # Load the pre-trained artifacts we saved in Part 1
-        try:
-            self.landslide_clf = joblib.load(LANDSLIDE_MODEL_PATH)
-            self.flood_reg = joblib.load(FLOOD_MODEL_PATH)
-            print("AI Engine: All models loaded successfully.")
-        except Exception as e:
-            print(f"Error loading models: {e}. Ensure Part 1 training ran.")
-            # Fallback to dummy logic if files are missing
-            self.landslide_clf = None
-            self.flood_reg = None
+        self.url = "https://api.open-meteo.com/v1/elevation"
 
-    def predict(self, data: SimulationInput):
-        # 1. Prepare Features for Landslide (5 features)
-        ls_features = np.array([[
-            data.soil_moisture, 
-            data.slope_angle, 
-            data.rainfall_intensity, 
-            data.elevation, 
-            data.drainage_density
-        ]])
+    async def get_slope_and_elevation(self, lat: float, lon: float):
+        # Fetches elevation for center and 4 surrounding points to calculate slope
+        delta = 0.0008 
+        coords = [(lat, lon), (lat + delta, lon), (lat - delta, lon), (lat, lon + delta), (lat, lon - delta)]
+        lats = ",".join([str(c[0]) for c in coords])
+        lons = ",".join([str(c[1]) for c in coords])
         
-        # 2. Prepare Features for Flood (4 features)
-        fl_features = np.array([[
-            data.rainfall_intensity, 
-            data.duration_hours, 
-            data.elevation, 
-            data.drainage_density
-        ]])
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.get(self.url, params={"latitude": lats, "longitude": lons})
+                elevs = resp.json().get("elevation", [500]*5)
+                z_c, z_n, z_s, z_e, z_w = elevs
+                dist = 90.0 
+                dz_dx = (z_e - z_w) / (2 * dist)
+                dz_dy = (z_n - z_s) / (2 * dist)
+                slope = math.degrees(math.atan(math.sqrt(dz_dx**2 + dz_dy**2)))
+                return round(slope, 2), z_c
+            except: return 15.0, 500.0
 
-        # 3. Run Inference
-        if self.landslide_clf and self.flood_reg:
-            # Classification gives us probability (0 to 100%)
-            ls_prob = self.landslide_clf.predict_proba(ls_features)[0][1] * 100
-            # Regression gives us a predicted risk score
-            fl_score = self.flood_reg.predict(fl_features)[0]
-        else:
-            # Heuristic fallback if ML models aren't ready
-            ls_prob = (data.slope_angle / 60) * (data.rainfall_intensity / 100) * 100
-            fl_score = (data.rainfall_intensity * data.duration_hours) / 10
+    async def get_profile(self, lat: float, lon: float):
+        # Generates 10 points for the Terrain Profile Chart
+        lats = [lat + (i * 0.001) for i in range(-5, 5)]
+        lons = [lon] * 10
+        async with httpx.AsyncClient() as client:
+            try:
+                resp = await client.get(self.url, params={
+                    "latitude": ",".join(map(str, lats)), 
+                    "longitude": ",".join(map(str, lons))
+                })
+                return resp.json().get("elevation", [])
+            except: return [500] * 10
 
-        # 4. Calculate Final Alert Level
-        max_risk = max(ls_prob, fl_score)
-        if max_risk > 80:
-            level, advice = "RED", "IMMEDIATE EVACUATION REQUIRED. High probability of mass movement."
-        elif max_risk > 50:
-            level, advice = "YELLOW", "CAUTION: Monitor local drainage and avoid steep slopes."
-        else:
-            level, advice = "GREEN", "Normal status. No significant risk detected."
-
-        return {
-            "landslide_risk": round(float(ls_prob), 2),
-            "flood_risk": round(float(fl_score), 2),
-            "alert_level": level,
-            "recommendation": advice
-        }
-
-# Initialize the engine
-engine = HazardModel()
-
-# --- 5. API Endpoints ---
+# --- 4. ROUTES ---
+elevation_service = ElevationService()
 
 @app.post("/simulate")
-async def simulate_hazard(input_data: SimulationInput):
-    """
-    Core ML Endpoint: Takes sensor/simulation data and returns 
-    multi-hazard risk assessments using pre-trained RF models.
+async def simulate(input_data: SimulationInput):
+    slope, elev = await elevation_service.get_slope_and_elevation(input_data.lat, input_data.lon)
+    profile = await elevation_service.get_profile(input_data.lat, input_data.lon)
+    
+    # Simple risk logic for demonstration
+    risk = min(100, (slope * 2) + (input_data.rainfall_intensity / 2))
+    level = "RED" if risk > 70 else "YELLOW" if risk > 40 else "GREEN"
+    
+    res = {
+        "landslide_risk": round(risk, 2),
+        "flood_risk": round(input_data.rainfall_intensity * 0.4, 2),
+        "alert_level": level,
+        "recommendation": "Evacuate" if level == "RED" else "Stay Alert",
+        "elevation_profile": profile, # Necessary for Terrain Chart
+        "slope_calculated": slope
+    }
+    return {"status": "success", "results": res}
+
+@app.post("/chat_explanation")
+async def chat_explanation(risk_data: dict = Body(...)):
+    # Calls Gemini AI to explain the risk factors
+    prompt = f"""
+    Act as a disaster expert. Explain these risks:
+    Landslide Risk: {risk_data.get('landslide_risk')}%
+    Slope: {risk_data.get('slope_calculated')}°
+    Rainfall: {risk_data.get('rainfall_intensity')}mm/hr
+    Provide a professional 2-sentence explanation and one safety tip.
     """
     try:
-        results = engine.predict(input_data)
-        return {
-            "status": "success",
-            "location": {"lat": input_data.lat, "lon": input_data.lon},
-            "results": results
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        response = gemini_model.generate_content(prompt)
+        return {"explanation": response.text}
+    except:
+        return {"explanation": "AI service temporarily offline."}
 
-@app.get("/health")
-async def health_check():
-    return {"status": "online", "models_loaded": engine.landslide_clf is not None}
-
-# Run with: uvicorn main:app --reload
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-
-# 1. Mount the 'static' folder to serve CSS/JS
+# Static Files
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# 2. Serve index.html at the root URL
 @app.get("/")
-async def read_index():
-    return FileResponse('static/index.html')
+async def index(): return FileResponse('static/index.html')
