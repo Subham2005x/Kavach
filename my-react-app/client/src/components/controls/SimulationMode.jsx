@@ -3,27 +3,67 @@ import { Cloud, RotateCcw } from 'lucide-react';
 
 const SimulationMode = ({ isActive, onToggle, rainfall, onRainfallChange, onReset }) => {
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
-          <Cloud className="w-5 h-5 text-blue-600" />
+    <div style={{
+      background: 'rgba(30,41,59,0.6)',
+      backdropFilter: 'blur(12px)',
+      borderRadius: 12,
+      padding: 16,
+      border: '1px solid rgba(51,65,85,0.5)'
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <h3 style={{
+          fontWeight: 600,
+          color: '#f1f5f9',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          fontSize: 15,
+          letterSpacing: '0.3px'
+        }}>
+          <Cloud style={{ width: 18, height: 18, color: '#60a5fa' }} />
           Simulation Mode
         </h3>
-        <label className="relative inline-flex items-center cursor-pointer">
+        <label style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
           <input
             type="checkbox"
             checked={isActive}
             onChange={() => onToggle(!isActive)}
-            className="sr-only peer"
+            style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }}
           />
-          <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          <div style={{
+            width: 44,
+            height: 24,
+            background: isActive ? 'linear-gradient(135deg, #3b82f6, #6366f1)' : 'rgba(51,65,85,0.8)',
+            borderRadius: 12,
+            position: 'relative',
+            transition: 'all 0.3s ease',
+            boxShadow: isActive ? '0 2px 8px rgba(59,130,246,0.4)' : 'none'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 2,
+              left: isActive ? 22 : 2,
+              width: 20,
+              height: 20,
+              background: 'white',
+              borderRadius: '50%',
+              transition: 'left 0.3s ease',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+            }} />
+          </div>
         </label>
       </div>
       {isActive && (
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
-            <label className="text-sm font-medium text-slate-700 block mb-2">
-              Rainfall: {rainfall}mm
+            <label style={{
+              fontSize: 13,
+              fontWeight: 500,
+              color: '#cbd5e1',
+              display: 'block',
+              marginBottom: 8
+            }}>
+              Rainfall: <span style={{ color: '#60a5fa', fontWeight: 600 }}>{rainfall}mm</span>
             </label>
             <input
               type="range"
@@ -31,23 +71,61 @@ const SimulationMode = ({ isActive, onToggle, rainfall, onRainfallChange, onRese
               max="500"
               value={rainfall}
               onChange={(e) => onRainfallChange(Number(e.target.value))}
-              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              style={{
+                width: '100%',
+                height: 6,
+                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${(rainfall/500)*100}%, rgba(51,65,85,0.5) ${(rainfall/500)*100}%, rgba(51,65,85,0.5) 100%)`,
+                borderRadius: 3,
+                outline: 'none',
+                cursor: 'pointer',
+                WebkitAppearance: 'none'
+              }}
             />
-            <div className="flex justify-between text-xs text-slate-500 mt-1">
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b', marginTop: 4 }}>
               <span>0mm</span>
               <span>500mm</span>
             </div>
           </div>
           <button
             onClick={onReset}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors"
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              padding: '10px 16px',
+              background: 'rgba(51,65,85,0.6)',
+              border: '1px solid rgba(71,85,105,0.5)',
+              color: '#e2e8f0',
+              fontWeight: 500,
+              fontSize: 13,
+              borderRadius: 8,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(71,85,105,0.6)';
+              e.currentTarget.style.borderColor = 'rgba(100,116,139,0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(51,65,85,0.6)';
+              e.currentTarget.style.borderColor = 'rgba(71,85,105,0.5)';
+            }}
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw style={{ width: 14, height: 14 }} />
             Reset Simulation
           </button>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-900">
-            <p className="font-semibold mb-1">Simulation Active</p>
-            <p>Adjust rainfall to see updated risk assessments in real-time.</p>
+          <div style={{
+            background: 'rgba(37,99,235,0.15)',
+            border: '1px solid rgba(59,130,246,0.3)',
+            borderRadius: 8,
+            padding: 12,
+            fontSize: 12,
+            color: '#bfdbfe'
+          }}>
+            <p style={{ fontWeight: 600, marginBottom: 4 }}>Simulation Active</p>
+            <p style={{ color: '#93c5fd' }}>Adjust rainfall to see updated risk assessments in real-time.</p>
           </div>
         </div>
       )}

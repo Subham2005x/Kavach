@@ -1,18 +1,9 @@
 import React, { useState, useCallback, useMemo } from "react";
 
-<<<<<<< HEAD
 // ===== IMPORT COMPONENTS =====
 import LayerToggle from "@/components/map/LayerToggle";
 import SimulationMode from "@/components/controls/SimulationMode";
 import SafetyAdvisory from "@/components/panels/SafetyAdvisory";
-=======
-const Dashboard = () => {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
->>>>>>> 1d77054754f168665480c5e7f645e822cf2a03ca
-
 import RiskMap from "@/components/map/RiskMap";
 import RiskSummaryPanel from "@/components/panels/RiskSummaryPanel";
 import WeatherPanel from "@/components/panels/WeatherPanel";
@@ -60,7 +51,6 @@ export default function Dashboard() {
      RENDER
   ============================== */
   return (
-<<<<<<< HEAD
     <div
       style={{
         position: "fixed",
@@ -103,119 +93,6 @@ export default function Dashboard() {
             <div style={{ fontWeight: 600 }}>MountainGuard</div>
             <div style={{ fontSize: 12, color: "#94a3b8" }}>
               Disaster Risk Intelligence
-=======
-    <div className="dashboard">
-      {/* Sidebar */}
-      <aside className={`dashboard-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
-        <div className="sidebar-header">
-          <div className="logo-section">
-            <div className="logo-icon">🏔️</div>
-            <h2>Kavach</h2>
-          </div>
-          <button 
-            className="mobile-close-btn" 
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <a href="#" className="nav-item active">
-            <span className="icon">📊</span>
-            <span>Dashboard</span>
-          </a>
-          <a href="#" className="nav-item">
-            <span className="icon">📈</span>
-            <span>Analytics</span>
-          </a>
-          <a href="#" className="nav-item">
-            <span className="icon">⚙️</span>
-            <span>Settings</span>
-          </a>
-          <a href="#" className="nav-item">
-            <span className="icon">👤</span>
-            <span>Profile</span>
-          </a>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <div className="dashboard-main">
-        {/* Header */}
-        <header className="dashboard-header">
-          <div className="header-left">
-            <button 
-              className="mobile-menu-btn" 
-              onClick={() => setIsMobileMenuOpen(true)}
-              aria-label="Open menu"
-            >
-              ☰
-            </button>
-            <div>
-              <h1>Welcome back, {user?.displayName || user?.email?.split('@')[0] || 'User'}!</h1>
-              <p>Here's what's happening with your account today.</p>
-            </div>
-          </div>
-          <div className="header-right">
-            <div className="user-profile">
-              <div className="user-avatar">
-                {user?.photoURL ? (
-                  <img src={user.photoURL} alt="Profile" />
-                ) : (
-                  <div className="avatar-placeholder">
-                    {(user?.displayName?.[0] || user?.email?.[0] || 'U').toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="user-info">
-                <p className="user-name">{user?.displayName || 'User'}</p>
-                <p className="user-email">{user?.email || 'No email'}</p>
-              </div>
-            </div>
-            <button className="logout-btn" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </header>
-
-        {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-content">
-              <h3>Total Views</h3>
-              <p className="stat-value">12,543</p>
-              <span className="stat-change positive">+12.5%</span>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">👥</div>
-            <div className="stat-content">
-              <h3>Active Users</h3>
-              <p className="stat-value">2,345</p>
-              <span className="stat-change positive">+8.2%</span>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">💰</div>
-            <div className="stat-content">
-              <h3>Revenue</h3>
-              <p className="stat-value">$45,231</p>
-              <span className="stat-change negative">-3.1%</span>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon">⭐</div>
-            <div className="stat-content">
-              <h3>Rating</h3>
-              <p className="stat-value">4.8/5</p>
-              <span className="stat-change positive">+0.3</span>
->>>>>>> 1d77054754f168665480c5e7f645e822cf2a03ca
             </div>
           </div>
         </div>

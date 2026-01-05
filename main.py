@@ -9,10 +9,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from dotenv import load_dotenv
 
 # --- 1. CONFIG & API KEYS ---
-# Replace with your actual Gemini API Key
-genai.configure(api_key="AIzaSyDUDcWnn-Srl3hvcur3m-ETV41OV-ZiJak")
+load_dotenv()  # Load environment variables from .env file
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY not found in .env file")
+
+genai.configure(api_key=GEMINI_API_KEY)
 gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 
 app = FastAPI()
