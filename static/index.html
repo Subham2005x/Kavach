@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MountainGuard - Disaster Risk Intelligence</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/mountain--v1.png" alt="MountainGuard Logo">
+                <span>MountainGuard</span>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <label for="language-toggle">Language</label>
+                    <select id="language-toggle" class="custom-select">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="ne">नेपाली (Nepali)</option>
+                    </select>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Map Layers</h3>
+                    <label class="switch">
+                        <input type="checkbox" id="landslide-layer-toggle" checked>
+                        <span class="slider round"></span> Landslide Zones
+                    </label>
+                    <label class="switch">
+                        <input type="checkbox" id="sentinel-layer-toggle">
+                        <span class="slider round"></span> Sentinel-2 Satellite
+                    </label>
+                </div>
+
+                <div class="sidebar-section simulation-controls">
+                    <h3>Simulation Mode</h3>
+                    <div class="scenario-buttons">
+                        <button data-intensity="10" data-duration="6">Light</button>
+                        <button data-intensity="150" data-duration="48">Extreme</button>
+                    </div>
+                    
+                    <div class="slider-group">
+                        <label>Rainfall: <span id="rainfall-value">50</span> mm/hr</label>
+                        <input type="range" id="rainfall-intensity" min="0" max="200" value="50">
+                    </div>
+                    <div class="slider-group">
+                        <label>Duration: <span id="duration-value">24</span> hrs</label>
+                        <input type="range" id="duration-hours" min="1" max="72" value="24">
+                    </div>
+                    <div class="slider-group">
+                        <label>Soil Moisture: <span id="soil-moisture-value">0.5</span></label>
+                        <input type="range" id="soil-moisture" min="0" max="1" step="0.05" value="0.5">
+                    </div>
+                    <div class="slider-group">
+                        <label>Slope Angle: <span id="slope-angle-value">30</span>°</label>
+                        <input type="range" id="slope-angle" min="0" max="60" value="30">
+                    </div>
+                    <button id="start-simulation-btn" class="primary-btn">Start Simulation</button>
+                </div>
+
+                <button id="report-incident-btn" class="danger-btn">⚠️ Report Landslide</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search mountain zones...">
+                    <button>Search</button>
+                </div>
+                <div class="status-indicators">
+                    <div class="live-status">LIVE</div>
+                    <div id="selected-coords">Lat: --, Lon: --</div>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <div class="map-container card">
+                    <div id="map"></div>
+                </div>
+
+                <div class="card ai-insight-card">
+                    <h3>AI Risk Analysis (Gemini)</h3>
+                    <div id="risk-explanation-text" class="chat-box">
+                        <p class="placeholder-text">Click map to generate expert insight...</p>
+                    </div>
+                    <div class="chart-container mini-chart">
+                        <canvas id="explanationChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card hazard-card">
+                    <h3>Hazard Breakdown</h3>
+                    <div class="chart-container">
+                        <canvas id="hazardDistributionChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card profile-card">
+                    <h3>Terrain Elevation Profile</h3>
+                    <div class="chart-container">
+                        <canvas id="terrainProfileChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="early-warning-card card full-width">
+                    <span class="alert-icon">⚠️</span>
+                    <p id="alert-recommendation">System Ready. Select a location to begin analysis.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
