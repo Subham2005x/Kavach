@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { User } from "lucide-react";
 
 // ===== IMPORT COMPONENTS =====
 import LayerToggle from "@/components/map/LayerToggle";
@@ -12,15 +14,14 @@ import HazardRadarChart from "@/components/charts/HazardRadarChart";
 import RainfallTrendChart from "@/components/charts/RainfallTrendChart";
 
 // ===== IMPORT SERVICES =====
-import { simulateRisk, getAIExplanation } from "@/services";
+import { simulateRisk, getAIExplanation, getCurrentUser, logout } from "@/services";
 
 // ===== IMPORT STYLES =====
 import "./Dashboard.css";
 
-// =============================
-// DASHBOARD
-// =============================
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   /* ---------- STATE ---------- */
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [layers, setLayers] = useState({
@@ -31,7 +32,11 @@ export default function Dashboard() {
   });
   const [simulationActive, setSimulationActive] = useState(false);
   const [simulatedRainfall, setSimulatedRainfall] = useState(0);
-  
+
+  // Profile dropdown (store {name, email})
+  const [user, setUser] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
   // Backend integration state
   const [riskData, setRiskData] = useState(null);
   const [aiExplanation, setAIExplanation] = useState("");
@@ -43,26 +48,45 @@ export default function Dashboard() {
   const effectiveRainfall = simulationActive ? simulatedRainfall : 0;
 
   const currentRisk = useMemo(() => {
-    // Use backend risk data if available
     if (riskData?.alert_level) {
       const level = riskData.alert_level.toLowerCase();
       return level === "red" ? "severe" : level === "yellow" ? "high" : "moderate";
     }
-    
-    // Fallback to client-side calculation
+
     if (!selectedLocation) return "moderate";
     if (effectiveRainfall > 120) return "severe";
     if (effectiveRainfall > 80) return "high";
     return selectedLocation.riskLevel || "moderate";
   }, [riskData, selectedLocation, effectiveRainfall]);
 
+  /* ---------- LOAD USER (Firebase currentUser) ---------- */
+  useEffect(() => {
+    const fbUser = getCurrentUser(); // Firebase user object (or null)
+    if (fbUser) {
+      setUser({
+        name: fbUser.displayName || "User",
+        email: fbUser.email || "",
+      });
+    } else {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout(); // Firebase signOut wrapper
+      navigate("/"); // landing page
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  }, [navigate]);
+
   /* ---------- BACKEND API CALLS ---------- */
   const fetchRiskAssessment = useCallback(async (location, rainfall) => {
     if (!location) return;
-    
-    // Use at least 50mm rainfall for analysis even if simulation is off
+
     const rainfallToUse = rainfall > 0 ? rainfall : 50;
-    
+
     setIsLoading(true);
     setLoadingStage("Fetching terrain data...");
     try {
@@ -72,37 +96,35 @@ export default function Dashboard() {
         rainfall_intensity: rainfallToUse,
         duration_hours: 24,
         soil_moisture: 0.5,
-        slope_angle: 0, // Backend calculates this
-        elevation: 0, // Backend calculates this
+        slope_angle: 0,
+        elevation: 0,
         drainage_density: 1.5,
-        use_live_weather: true
+        use_live_weather: true,
       };
 
-      // Fetch risk simulation
       setLoadingStage("Analyzing terrain and slope...");
       const response = await simulateRisk(simulationData);
-      
-      if (response.status === 'success') {
+
+      if (response.status === "success") {
         setLoadingStage("Calculating risk levels...");
         setRiskData(response.results);
         setTerrainProfile(response.results.elevation_profile || []);
-        
-        // Fetch AI explanation
+
         setLoadingStage("Generating AI insights...");
         try {
           const aiResponse = await getAIExplanation({
             landslide_risk: response.results.landslide_risk,
             slope_calculated: response.results.slope_calculated,
-            rainfall_intensity: rainfall
+            rainfall_intensity: rainfall,
           });
           setAIExplanation(aiResponse.explanation || "");
         } catch (aiError) {
-          console.error('AI explanation error:', aiError);
+          console.error("AI explanation error:", aiError);
           setAIExplanation("AI analysis temporarily unavailable.");
         }
       }
     } catch (error) {
-      console.error('Error fetching risk assessment:', error);
+      console.error("Error fetching risk assessment:", error);
       setRiskData(null);
       setAIExplanation("");
     } finally {
@@ -111,7 +133,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Trigger backend call when location or rainfall changes
   useEffect(() => {
     if (selectedLocation) {
       fetchRiskAssessment(selectedLocation, effectiveRainfall);
@@ -124,13 +145,12 @@ export default function Dashboard() {
   }, []);
 
   const handleLocationSelect = useCallback((location) => {
-    // Ensure location has proper coordinates structure
     const normalizedLocation = {
       ...location,
-      coordinates: location.coordinates || { 
-        lat: location.lat, 
-        lng: location.lng 
-      }
+      coordinates: location.coordinates || {
+        lat: location.lat,
+        lng: location.lng,
+      },
     };
     setSelectedLocation(normalizedLocation);
   }, []);
@@ -143,67 +163,143 @@ export default function Dashboard() {
     setTerrainProfile([]);
   }, []);
 
+  const handleUseMyLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const currentLoc = {
+          name: "My Current Location",
+          lat: latitude,
+          lng: longitude,
+          risk: "moderate",
+          coordinates: { lat: latitude, lng: longitude },
+        };
+        handleLocationSelect(currentLoc);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        alert("Unable to get your location. Please enable location services.");
+        setIsLoading(false);
+      }
+    );
+  }, [handleLocationSelect]);
+
   /* =============================
-     RENDER
+       RENDER
   ============================== */
   return (
     <div className="dashboard-container">
-      {/* ================= TOP PANEL ================= */}
       <header className="dashboard-header">
-        <div className="header-logo">
-          <div className="logo-icon">K</div>
-          <div>
-            <div className="logo-text-title">Kavach</div>
-            <div className="logo-text-subtitle">
-              Disaster Risk Intelligence
+        {/* LEFT: Logo + Use My Location */}
+        <div className="header-left" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className="header-logo">
+            <div className="logo-icon">K</div>
+            <div>
+              <div className="logo-text-title">Kavach</div>
+              <div className="logo-text-subtitle">Disaster Risk Intelligence</div>
             </div>
           </div>
-        </div>
 
-        <div className="header-actions">
-          <button
-            onClick={() => {
-              if (navigator.geolocation) {
-                setIsLoading(true);
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const { latitude, longitude } = position.coords;
-                    const currentLoc = {
-                      name: 'My Current Location',
-                      lat: latitude,
-                      lng: longitude,
-                      risk: 'moderate',
-                      coordinates: { lat: latitude, lng: longitude }
-                    };
-                    handleLocationSelect(currentLoc);
-                    setIsLoading(false);
-                  },
-                  (error) => {
-                    console.error('Geolocation error:', error);
-                    alert('Unable to get your location. Please enable location services.');
-                    setIsLoading(false);
-                  }
-                );
-              } else {
-                alert('Geolocation is not supported by your browser.');
-              }
-            }}
-            className="location-button"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <button onClick={handleUseMyLocation} className="location-button">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
               <circle cx="12" cy="10" r="3"></circle>
             </svg>
             Use My Location
           </button>
+        </div>
+
+        {/* RIGHT: Loading + Live + Profile */}
+        <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {isLoading && (
             <div className="loading-indicator">
               <span>🔄</span>
               <span>Analyzing...</span>
             </div>
           )}
-          <div className="live-indicator">
-            ● Live
+
+          <div className="live-indicator">● Live</div>
+
+          {/* Profile */}
+          <div style={{ position: "relative" }}>
+            <button
+              type="button"
+              onClick={() => setIsProfileOpen((prev) => !prev)}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 999,
+                border: "1px solid rgba(148, 163, 184, 0.5)",
+                background: "rgba(15, 23, 42, 0.7)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+              aria-label="Profile"
+            >
+              <User size={18} color="#e2e8f0" />
+            </button>
+
+            {isProfileOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  marginTop: 8,
+                  padding: 12,
+                  minWidth: 200,
+                  background: "rgba(15, 23, 42, 0.98)",
+                  borderRadius: 8,
+                  border: "1px solid rgba(30, 41, 59, 0.8)",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.4)",
+                  zIndex: 2000,
+                }}
+              >
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>
+                    {user?.name || "User"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                    {user?.email || ""}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  style={{
+                    width: "100%",
+                    padding: "7px 10px",
+                    background: "rgba(239, 68, 68, 0.1)",
+                    border: "1px solid rgba(239, 68, 68, 0.35)",
+                    borderRadius: 6,
+                    color: "#ef4444",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -212,29 +308,25 @@ export default function Dashboard() {
       <div className="dashboard-grid">
         {/* Global Loading Overlay */}
         {isLoading && (
-          <div style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(2, 6, 23, 0.8)",
-            backdropFilter: "blur(8px)",
-            zIndex: 1000,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 20
-          }}>
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              background: "rgba(2, 6, 23, 0.8)",
+              backdropFilter: "blur(8px)",
+              zIndex: 1000,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 20,
+            }}
+          >
             <div className="loading-spinner"></div>
             <div style={{ textAlign: "center" }}>
-              <div className="loading-title">
-                Analyzing Location...
-              </div>
-              <div className="loading-stage">
-                {loadingStage}
-              </div>
-              <div className="loading-subtitle">
-                Please wait
-              </div>
+              <div className="loading-title">Analyzing Location...</div>
+              <div className="loading-stage">{loadingStage}</div>
+              <div className="loading-subtitle">Please wait</div>
             </div>
           </div>
         )}
@@ -255,6 +347,7 @@ export default function Dashboard() {
             />
           </div>
         </div>
+
         {/* ===== INTERACTIVE MAP CARD ===== */}
         <div className="feature-card map-card">
           <div className="feature-card-header">
@@ -270,7 +363,7 @@ export default function Dashboard() {
               riskData={riskData}
             />
           </div>
-        </div>  
+        </div>
 
         {/* ===== WEATHER CONDITIONS CARD ===== */}
         <div className="feature-card medium">
@@ -279,10 +372,7 @@ export default function Dashboard() {
             <h2 className="feature-card-title">Weather Conditions</h2>
           </div>
           <div className="feature-card-body">
-            <WeatherPanel 
-              simulatedRainfall={effectiveRainfall}
-              location={selectedLocation}
-            />
+            <WeatherPanel simulatedRainfall={effectiveRainfall} location={selectedLocation} />
           </div>
         </div>
 
@@ -315,10 +405,7 @@ export default function Dashboard() {
             <h2 className="feature-card-title">Terrain Elevation Profile</h2>
           </div>
           <div className="feature-card-body">
-            <TerrainElevationChart 
-              terrainProfile={terrainProfile} 
-              location={selectedLocation}
-            />
+            <TerrainElevationChart terrainProfile={terrainProfile} location={selectedLocation} />
           </div>
         </div>
 
@@ -333,21 +420,15 @@ export default function Dashboard() {
               <div className="risk-metrics-grid">
                 <div className="risk-metric-item">
                   <div className="risk-metric-label">Landslide Risk</div>
-                  <div className="risk-metric-value landslide">
-                    {riskData.landslide_risk}%
-                  </div>
+                  <div className="risk-metric-value landslide">{riskData.landslide_risk}%</div>
                 </div>
                 <div className="risk-metric-item">
                   <div className="risk-metric-label">Flood Risk</div>
-                  <div className="risk-metric-value flood">
-                    {riskData.flood_risk}%
-                  </div>
+                  <div className="risk-metric-value flood">{riskData.flood_risk}%</div>
                 </div>
                 <div className="risk-metric-item">
                   <div className="risk-metric-label">Slope Angle</div>
-                  <div className="risk-metric-value slope">
-                    {riskData.slope_calculated}°
-                  </div>
+                  <div className="risk-metric-value slope">{riskData.slope_calculated}°</div>
                 </div>
                 <div className="risk-metric-item">
                   <div className="risk-metric-label">Alert Level</div>
@@ -356,15 +437,15 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
+
               <div className={`risk-recommendation ${riskData.alert_level.toLowerCase()}`}>
                 <div className="recommendation-label">Recommendation</div>
-                <div className="recommendation-text">
-                  {riskData.recommendation}
-                </div>
+                <div className="recommendation-text">{riskData.recommendation}</div>
               </div>
+
+              <SafetyAdvisory riskLevel={currentRisk} />
             </div>
-            </div>
-        
+          </div>
         )}
 
         {/* ===== HAZARD RADAR CHART CARD ===== */}
@@ -374,10 +455,7 @@ export default function Dashboard() {
             <h2 className="feature-card-title">Multi-Hazard Risk Profile</h2>
           </div>
           <div className="feature-card-body">
-            <HazardRadarChart 
-              riskData={riskData}
-              simulatedRainfall={effectiveRainfall}
-            />
+            <HazardRadarChart riskData={riskData} simulatedRainfall={effectiveRainfall} />
           </div>
         </div>
 
@@ -388,9 +466,7 @@ export default function Dashboard() {
             <h2 className="feature-card-title">24-Hour Rainfall Forecast</h2>
           </div>
           <div className="feature-card-body">
-            <RainfallTrendChart 
-              simulatedRainfall={effectiveRainfall}
-            />
+            <RainfallTrendChart simulatedRainfall={effectiveRainfall} />
           </div>
         </div>
 
@@ -421,19 +497,6 @@ export default function Dashboard() {
             />
           </div>
         </div>
-
-        {/* ===== SAFETY ADVISORY CARD ===== */}
-        <div className="feature-card medium">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">⚠️</span>
-            <h2 className="feature-card-title">Safety Advisory</h2>
-          </div>
-          <div className="feature-card-body">
-            <SafetyAdvisory riskLevel={currentRisk} />
-          </div>
-        </div>
-
-        
       </div>
     </div>
   );

@@ -1,9 +1,7 @@
 import React from 'react';
-import { Shield, CheckCircle } from 'lucide-react';
 
 const ADVISORY_CONFIG = {
   low: {
-    color: 'text-green-600',
     advisories: [
       'Continue normal activities',
       'Monitor routine weather forecasts',
@@ -11,7 +9,6 @@ const ADVISORY_CONFIG = {
     ],
   },
   moderate: {
-    color: 'text-yellow-600',
     advisories: [
       'Stay alert to changing weather conditions',
       'Review local evacuation procedures',
@@ -20,7 +17,6 @@ const ADVISORY_CONFIG = {
     ],
   },
   high: {
-    color: 'text-orange-600',
     advisories: [
       'Avoid mountainous and elevated terrain',
       'Closely monitor official weather alerts',
@@ -29,7 +25,6 @@ const ADVISORY_CONFIG = {
     ],
   },
   severe: {
-    color: 'text-red-600',
     advisories: [
       'Avoid all high-risk zones immediately',
       'Follow evacuation orders from authorities',
@@ -44,32 +39,26 @@ const SafetyAdvisory = ({ riskLevel = 'moderate' }) => {
   const config = ADVISORY_CONFIG[normalizedRisk] || ADVISORY_CONFIG.moderate;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="font-semibold text-slate-800 mb-4 flex items-center gap-2">
-        <Shield className={`w-5 h-5 ${config.color}`} />
-        Safety Advisory
-      </h3>
+    <div className="safety-advisory-section">
+      <div className="safety-advisory-header">
+        <span className="safety-advisory-icon">⚠️</span>
+        <span className="safety-advisory-title">Safety Advisory</span>
+      </div>
 
-      <div className="space-y-3">
+      <div className="safety-advisory-list">
         {config.advisories.map((advisory, index) => (
-          <div key={index} className="flex gap-3 items-start">
-            <CheckCircle
-              className={`w-4 h-4 ${config.color} flex-shrink-0 mt-0.5`}
-            />
-            <p className="text-sm text-slate-700">
-              {advisory}
-            </p>
+          <div key={index} className="safety-advisory-item">
+            <span className="safety-advisory-checkmark">✓</span>
+            <span>{advisory}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 pt-4 border-t border-slate-200">
-        <p className="text-xs text-slate-500">
-          Risk Level:{' '}
-          <span className="font-semibold text-slate-900">
-            {normalizedRisk.toUpperCase()}
-          </span>
-        </p>
+      <div className="safety-risk-level">
+        <span className="safety-risk-level-label">Risk Level</span>
+        <span className="safety-risk-level-value">
+          {normalizedRisk.toUpperCase()}
+        </span>
       </div>
     </div>
   );
