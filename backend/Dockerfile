@@ -21,8 +21,8 @@ COPY . .
 # Create directories for models if they don't exist
 RUN mkdir -p ml_models
 
-# Expose port
+# Expose port (Render will override with $PORT)
 EXPOSE 8080
 
-# Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run the application (Render sets $PORT environment variable)
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
