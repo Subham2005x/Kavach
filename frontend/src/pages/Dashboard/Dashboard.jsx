@@ -206,7 +206,7 @@ export default function Dashboard() {
        RENDER
   ============================== */
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${isLoading ? 'is-loading' : ''}`}>
       <header className="dashboard-header">
         {/* LEFT: Logo + Use My Location */}
         <div className="header-left" style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -349,7 +349,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* ================= MAIN GRID ================= */}
+      {/* ================= MAIN CONTENT WITH FLEXBOX ROWS ================= */}
       <div className="dashboard-grid">
         {/* Global Loading Overlay */}
         {isLoading && (
@@ -367,6 +367,17 @@ export default function Dashboard() {
               gap: 20,
             }}
           >
+            {/* Hide all interactive elements below loading overlay */}
+            <style>{`
+              .dashboard-grid * {
+                pointer-events: none !important;
+              }
+              .feature-card-body input,
+              .feature-card-body [role="search"],
+              .row-1-center input {
+                display: none !important;
+              }
+            `}</style>
             <div className="loading-spinner"></div>
             <div style={{ textAlign: "center" }}>
               <div className="loading-title">Analyzing Location...</div>
@@ -376,68 +387,110 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ===== ROW 1: RISK SUMMARY + MAP + WEATHER ===== */}
-
-        {/* Risk Summary - Left Column */}
-        <div className="feature-card row1-left">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🎯</span>
-            <h2 className="feature-card-title">Risk Summary</h2>
+        {/* ===== ROW 1: Safe Zones + Map + Right Panel ===== */}
+        <div className="row-1">
+          {/* Safe Zones - Left */}
+          <div className="row-1-left feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🛡️</span>
+              <h2 className="feature-card-title">Safe Zones & Evacuation Routes</h2>
+            </div>
+            <div className="feature-card-body">
+              <SafeZones location={selectedLocation} />
+            </div>
           </div>
-          <div className="feature-card-body">
-            <RiskSummaryPanel
-              location={selectedLocation}
-              simulatedRainfall={effectiveRainfall}
-              riskLevel={currentRisk}
-              riskData={riskData}
-              isLoading={isLoading}
-            />
+
+          {/* Interactive Map - Center */}
+          <div className="row-1-center feature-card map-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🗺️</span>
+              <h2 className="feature-card-title">Interactive Risk Map</h2>
+            </div>
+            <div className="feature-card-body">
+              <RiskMap
+                selectedLocation={selectedLocation}
+                layers={layers}
+                simulatedRainfall={effectiveRainfall}
+                onLocationSelect={handleLocationSelect}
+                riskData={riskData}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+
+          {/* Right Panel - Risk Summary + Weather */}
+          <div className="row-1-right">
+            {/* Risk Summary - Top Right */}
+            <div className="row-1-right-top feature-card">
+              <div className="feature-card-header">
+                <span className="feature-card-icon">🎯</span>
+                <h2 className="feature-card-title">Risk Summary</h2>
+              </div>
+              <div className="feature-card-body">
+                <RiskSummaryPanel
+                  location={selectedLocation}
+                  simulatedRainfall={effectiveRainfall}
+                  riskLevel={currentRisk}
+                  riskData={riskData}
+                  isLoading={isLoading}
+                />
+              </div>
+            </div>
+
+            {/* Weather - Bottom Right */}
+            <div className="row-1-right-bottom feature-card">
+              <div className="feature-card-header">
+                <span className="feature-card-icon">🌦️</span>
+                <h2 className="feature-card-title">Weather Conditions</h2>
+              </div>
+              <div className="feature-card-body">
+                <WeatherPanel simulatedRainfall={effectiveRainfall} location={selectedLocation} />
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Interactive Map - Center, Spans 2 rows */}
-        <div className="feature-card map-card">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🗺️</span>
-            <h2 className="feature-card-title">Interactive Risk Map</h2>
-          </div>
-          <div className="feature-card-body">
-            <RiskMap
-              selectedLocation={selectedLocation}
-              layers={layers}
-              simulatedRainfall={effectiveRainfall}
-              onLocationSelect={handleLocationSelect}
-              riskData={riskData}
-            />
-          </div>
-        </div>
+        {/* ===== ROW 2: Risk Metrics + Terrain + Hazard ===== */}
+        <div className="row-2">
+          {/* Risk Metrics - Left */}
+          <div className="row-2-left feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">📈</span>
+              <h2 className="feature-card-title">Detailed Risk Metrics</h2>
+            </div>
+            <div className="feature-card-body">
+              {riskData ? (
+                <>
+                  <div className="risk-metrics-grid">
+                    <div className="risk-metric-item">
+                      <div className="risk-metric-label">Landslide Risk</div>
+                      <div className="risk-metric-value landslide">{riskData.landslide_risk}%</div>
+                    </div>
+                    <div className="risk-metric-item">
+                      <div className="risk-metric-label">Flood Risk</div>
+                      <div className="risk-metric-value flood">{riskData.flood_risk}%</div>
+                    </div>
+                    <div className="risk-metric-item">
+                      <div className="risk-metric-label">Slope Angle</div>
+                      <div className="risk-metric-value slope">{riskData.slope_calculated}°</div>
+                    </div>
+                    <div className="risk-metric-item">
+                      <div className="risk-metric-label">Alert Level</div>
+                      <div className={`risk-metric-value ${riskData.alert_level.toLowerCase()}`}>
+                        {riskData.alert_level}
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Weather Conditions - Right Column */}
-        <div className="feature-card row1-right">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🌦️</span>
-            <h2 className="feature-card-title">Weather Conditions</h2>
-          </div>
-          <div className="feature-card-body">
-            <WeatherPanel simulatedRainfall={effectiveRainfall} location={selectedLocation} />
-          </div>
-        </div>
+                  <div className={`risk-recommendation ${riskData.alert_level.toLowerCase()}`}>
+                    <div className="recommendation-label">Recommendation</div>
+                    <div className="recommendation-text">{riskData.recommendation}</div>
+                  </div>
 
-        {/* AI Analysis Card - Positioned under Risk Summary on left */}
-        <div className="feature-card row2-left">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🤖</span>
-            <h2 className="feature-card-title">AI Expert Analysis</h2>
-          </div>
-          <div className="feature-card-body">
-            <div className="ai-panel-content">
-              {isLoading && loadingStage.includes("AI") ? (
-                <div className="ai-loading">
-                  <div className="ai-loading-spinner"></div>
-                  Generating expert analysis...
-                </div>
-              ) : aiExplanation ? (
-                aiExplanation
+                  <div className="safety-advisory-section">
+                    <SafetyAdvisory riskLevel={currentRisk} hasData={!!riskData} />
+                  </div>
+                </>
               ) : (
                 <div style={{
                   display: 'flex',
@@ -448,183 +501,148 @@ export default function Dashboard() {
                   color: '#64748b',
                   textAlign: 'center'
                 }}>
-                  <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>🗺️</div>
+                  <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>📊</div>
                   <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '6px', color: '#94a3b8' }}>
-                    No Analysis Available
+                    No Risk Data Available
                   </div>
                   <div style={{ fontSize: '12px', color: '#64748b' }}>
-                    Select a location on the map to get AI-powered risk analysis
+                    Select a location on the map to get detailed risk metrics
                   </div>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Terrain Elevation - Center */}
+          <div className="row-2-center feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">⛰️</span>
+              <h2 className="feature-card-title">Terrain Elevation Profile</h2>
+            </div>
+            <div className="feature-card-body">
+              <TerrainElevationChart terrainProfile={terrainProfile} location={selectedLocation} />
+            </div>
+          </div>
+
+          {/* Hazard Radar - Right */}
+          <div className="row-2-right feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">📡</span>
+              <h2 className="feature-card-title">Multi-Hazard Risk Profile</h2>
+            </div>
+            <div className="feature-card-body">
+              <HazardRadarChart riskData={riskData} simulatedRainfall={effectiveRainfall} />
+            </div>
+          </div>
         </div>
 
-        {/* ===== ROW 2: RISK METRICS (with Safety Advisory inside) + TERRAIN + HAZARD ===== */}
-
-        {/* Risk Metrics with Safety Advisory - Left */}
-        <div className="feature-card row2-content-left">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">📈</span>
-            <h2 className="feature-card-title">Detailed Risk Metrics</h2>
+        {/* ===== ROW 3: Rainfall + Map Layers + Simulation ===== */}
+        <div className="row-3">
+          {/* 24-Hour Rainfall - Left */}
+          <div className="row-3-left feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🌧️</span>
+              <h2 className="feature-card-title">24-Hour Rainfall Forecast</h2>
+            </div>
+            <div className="feature-card-body">
+              <RainfallTrendChart 
+                simulatedRainfall={effectiveRainfall} 
+                location={selectedLocation}
+              />
+            </div>
           </div>
-          <div className="feature-card-body">
-            {riskData ? (
-              <>
-                <div className="risk-metrics-grid">
-                  <div className="risk-metric-item">
-                    <div className="risk-metric-label">Landslide Risk</div>
-                    <div className="risk-metric-value landslide">{riskData.landslide_risk}%</div>
+
+          {/* Map Layers - Center */}
+          <div className="row-3-center feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🗺️</span>
+              <h2 className="feature-card-title">Map Layers</h2>
+            </div>
+            <div className="feature-card-body">
+              <LayerToggle layers={layers} onToggle={handleLayerToggle} />
+            </div>
+          </div>
+
+          {/* Simulation Mode - Right */}
+          <div className="row-3-right feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🔬</span>
+              <h2 className="feature-card-title">Simulation Mode</h2>
+            </div>
+            <div className="feature-card-body">
+              <SimulationMode
+                isActive={simulationActive}
+                onToggle={setSimulationActive}
+                rainfall={simulatedRainfall}
+                onRainfallChange={setSimulatedRainfall}
+                onReset={handleResetSimulation}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ===== ROW 4: Emergency Preparedness + AI Analysis (EQUAL WIDTH) ===== */}
+        <div className="row-4">
+          {/* Emergency Preparedness - Left (50% width) */}
+          <div className="row-4-left feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">✅</span>
+              <h2 className="feature-card-title">Emergency Preparedness</h2>
+            </div>
+            <div className="feature-card-body">
+              <PreparednessChecklist riskLevel={currentRisk} />
+            </div>
+          </div>
+
+          {/* AI Analysis - Right (50% width) */}
+          <div className="row-4-right feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🤖</span>
+              <h2 className="feature-card-title">AI Expert Analysis</h2>
+            </div>
+            <div className="feature-card-body">
+              <div className="ai-panel-content">
+                {isLoading && loadingStage.includes("AI") ? (
+                  <div className="ai-loading">
+                    <div className="ai-loading-spinner"></div>
+                    Generating expert analysis...
                   </div>
-                  <div className="risk-metric-item">
-                    <div className="risk-metric-label">Flood Risk</div>
-                    <div className="risk-metric-value flood">{riskData.flood_risk}%</div>
-                  </div>
-                  <div className="risk-metric-item">
-                    <div className="risk-metric-label">Slope Angle</div>
-                    <div className="risk-metric-value slope">{riskData.slope_calculated}°</div>
-                  </div>
-                  <div className="risk-metric-item">
-                    <div className="risk-metric-label">Alert Level</div>
-                    <div className={`risk-metric-value ${riskData.alert_level.toLowerCase()}`}>
-                      {riskData.alert_level}
+                ) : aiExplanation ? (
+                  aiExplanation
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '40px 20px',
+                    color: '#64748b',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>🤖</div>
+                    <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '6px', color: '#94a3b8' }}>
+                      No Analysis Available
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>
+                      Select a location on the map to get AI-powered risk analysis
                     </div>
                   </div>
-                </div>
-
-                <div className={`risk-recommendation ${riskData.alert_level.toLowerCase()}`}>
-                  <div className="recommendation-label">Recommendation</div>
-                  <div className="recommendation-text">{riskData.recommendation}</div>
-                </div>
-
-                {/* SAFETY ADVISORY MOVED INSIDE THIS CARD */}
-                <div className="safety-advisory-section">
-                  <SafetyAdvisory riskLevel={currentRisk} hasData={!!riskData} />
-                </div>
-              </>
-            ) : (
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '40px 20px',
-                color: '#64748b',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>📊</div>
-                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '6px', color: '#94a3b8' }}>
-                  No Risk Data Available
-                </div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>
-                  Select a location on the map to get detailed risk metrics
-                </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
 
-        {/* Terrain Elevation Chart - Center */}
-        <div className="feature-card row2-center">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">⛰️</span>
-            <h2 className="feature-card-title">Terrain Elevation Profile</h2>
-          </div>
-          <div className="feature-card-body">
-            <TerrainElevationChart terrainProfile={terrainProfile} location={selectedLocation} />
-          </div>
-        </div>
-
-        {/* Hazard Radar Chart - Right */}
-        <div className="feature-card row2-right">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">📡</span>
-            <h2 className="feature-card-title">Multi-Hazard Risk Profile</h2>
-          </div>
-          <div className="feature-card-body">
-            <HazardRadarChart riskData={riskData} simulatedRainfall={effectiveRainfall} />
-          </div>
-        </div>
-
-        {/* ===== ROW 3: RAINFALL + MAP LAYERS + SIMULATION ===== */}
-
-        {/* 24-Hour Rainfall Forecast - Left */}
-        <div className="feature-card row3-left">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🌧️</span>
-            <h2 className="feature-card-title">24-Hour Rainfall Forecast</h2>
-          </div>
-          <div className="feature-card-body">
-            <RainfallTrendChart 
-              simulatedRainfall={effectiveRainfall} 
-              location={selectedLocation}
-            />
-          </div>
-        </div>
-
-        {/* Map Layers - Center */}
-        <div className="feature-card row3-center">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🗺️</span>
-            <h2 className="feature-card-title">Map Layers</h2>
-          </div>
-          <div className="feature-card-body">
-            <LayerToggle layers={layers} onToggle={handleLayerToggle} />
-          </div>
-        </div>
-
-        {/* Simulation Mode - Right */}
-        <div className="feature-card row3-right">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🔬</span>
-            <h2 className="feature-card-title">Simulation Mode</h2>
-          </div>
-          <div className="feature-card-body">
-            <SimulationMode
-              isActive={simulationActive}
-              onToggle={setSimulationActive}
-              rainfall={simulatedRainfall}
-              onRainfallChange={setSimulatedRainfall}
-              onReset={handleResetSimulation}
-            />
-          </div>
-        </div>
-
-        {/* ===== ROW 4: SAFE ZONES + PREPAREDNESS CHECKLIST ===== */}
-
-        {/* Safe Zones & Evacuation Routes - Left */}
-        <div className="feature-card row4-left">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">🛡️</span>
-            <h2 className="feature-card-title">Safe Zones & Evacuation Routes</h2>
-          </div>
-          <div className="feature-card-body">
-            <SafeZones location={selectedLocation} />
-          </div>
-        </div>
-
-        {/* Emergency Preparedness Checklist - Right */}
-        <div className="feature-card row4-right">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">✅</span>
-            <h2 className="feature-card-title">Emergency Preparedness</h2>
-          </div>
-          <div className="feature-card-body">
-            <PreparednessChecklist riskLevel={currentRisk} />
-          </div>
-        </div>
-
-        {/* ===== ROW 5: LOCAL NEWS ===== */}
-
-        {/* Local Weather & Disaster News - Full Width */}
-        <div className="feature-card row5-full">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">📰</span>
-            <h2 className="feature-card-title">Local Weather & Disaster News</h2>
-          </div>
-          <div className="feature-card-body">
-            <LocalNews location={selectedLocation} />
+        {/* ===== ROW 5: Local News (Full Width) ===== */}
+        <div className="row-5">
+          <div className="row-5-full feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">📰</span>
+              <h2 className="feature-card-title">Local Weather & Disaster News</h2>
+            </div>
+            <div className="feature-card-body">
+              <LocalNews location={selectedLocation} />
+            </div>
           </div>
         </div>
       </div>
