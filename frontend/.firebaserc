@@ -1,8 +1,5 @@
-# Firebase
-.firebase/
-.firebaserc
-firebase-debug.log
-
-# Build
-dist/
-build/
+{
+  "projects": {
+    "default": "kavach-ffc75"
+  }
+}
