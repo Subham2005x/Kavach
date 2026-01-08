@@ -48,6 +48,32 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [terrainProfile, setTerrainProfile] = useState([]);
   const [loadingStage, setLoadingStage] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
+
+  /* ---------- MOBILE DETECTION ---------- */
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  /* ---------- PREVENT BODY SCROLL ON MOBILE WHEN MODALS OPEN ---------- */
+  useEffect(() => {
+    if (isMobile && (isProfileOpen || showAlertSettings)) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobile, isProfileOpen, showAlertSettings]);
 
   /* ---------- DERIVED ---------- */
   const effectiveRainfall = simulationActive ? simulatedRainfall : 0;
@@ -207,121 +233,182 @@ export default function Dashboard() {
   ============================== */
   return (
     <div className={`dashboard-container ${isLoading ? 'is-loading' : ''}`}>
+      {/* Mobile: Simple Top Bar */}
       <header className="dashboard-header">
-        {/* LEFT: Logo + Use My Location */}
-        <div className="header-left" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="header-left">
           <div className="header-logo">
             <div className="logo-icon">🛡</div>
-            <div>
+            <div className="logo-text">
               <div className="logo-text-title">Kavach</div>
-              <div className="logo-text-subtitle">Disaster Risk Intelligence</div>
+              {!isMobile && <div className="logo-text-subtitle">Disaster Risk Intelligence</div>}
             </div>
           </div>
 
-          <button onClick={handleUseMyLocation} className="location-button">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            Use My Location
-          </button>
+          {!isMobile && (
+            <button onClick={handleUseMyLocation} className="location-button">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Use My Location
+            </button>
+          )}
         </div>
 
-        {/* RIGHT: Loading + Live + Profile */}
-        <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {isLoading && (
+        <div className="header-actions">
+          {!isMobile && isLoading && (
             <div className="loading-indicator">
               <span>🔄</span>
               <span>Analyzing...</span>
             </div>
           )}
 
-          <div className="live-indicator">● Live</div>
+          {!isMobile && <div className="live-indicator">● Live</div>}
 
-          {/* Alert Bell */}
-          <button
-            onClick={() => setShowAlertSettings(true)}
-            className="alert-bell-button"
-            style={{
-              background: 'rgba(251, 146, 60, 0.15)',
-              border: '1px solid rgba(251, 146, 60, 0.3)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              cursor: 'pointer',
-              color: '#fb923c',
-              fontSize: '13px',
-              fontWeight: 500,
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(251, 146, 60, 0.25)';
-              e.currentTarget.style.borderColor = 'rgba(251, 146, 60, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(251, 146, 60, 0.15)';
-              e.currentTarget.style.borderColor = 'rgba(251, 146, 60, 0.3)';
-            }}
+          {!isMobile && (
+            <button
+              onClick={() => setShowAlertSettings(true)}
+              className="alert-bell-button"
+              aria-label="Alerts"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+              <span>Alerts</span>
+            </button>
+          )}
+
+          {!isMobile && (
+            <div className="profile-container">
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className="profile-button"
+                aria-label="Profile"
+              >
+                <User size={18} color="#e2e8f0" />
+              </button>
+
+              {isProfileOpen && (
+                <>
+                  <div 
+                    className="profile-backdrop"
+                    onClick={() => setIsProfileOpen(false)}
+                  />
+                  
+                  <div 
+                    className="profile-dropdown"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="profile-info">
+                      <div className="profile-name">
+                        {user?.name || "User"}
+                      </div>
+                      <div className="profile-email">
+                        {user?.email || ""}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="logout-button"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile: Bottom Navigation Bar */}
+      {isMobile && (
+        <nav className="mobile-bottom-nav">
+          <button 
+            onClick={handleUseMyLocation}
+            className="mobile-nav-item"
+            aria-label="My Location"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Location</span>
+          </button>
+
+          <button 
+            onClick={() => setShowAlertSettings(true)}
+            className="mobile-nav-item"
+            aria-label="Alerts"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
-            Alerts
+            <span>Alerts</span>
           </button>
 
-          {/* Profile */}
-          <div style={{ position: "relative" }}>
-            <button
-              type="button"
-              onClick={() => setIsProfileOpen((prev) => !prev)}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 999,
-                border: "1px solid rgba(148, 163, 184, 0.5)",
-                background: "rgba(15, 23, 42, 0.7)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
-              aria-label="Profile"
-            >
-              <User size={18} color="#e2e8f0" />
-            </button>
+          <button 
+            className="mobile-nav-item mobile-nav-item-primary"
+            aria-label="Dashboard"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>Dashboard</span>
+          </button>
 
-            {isProfileOpen && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  marginTop: 8,
-                  padding: 12,
-                  minWidth: 200,
-                  background: "rgba(15, 23, 42, 0.98)",
-                  borderRadius: 8,
-                  border: "1px solid rgba(30, 41, 59, 0.8)",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.4)",
-                  zIndex: 2000,
-                }}
+          <button 
+            className={`mobile-nav-item ${isLoading ? 'mobile-nav-item-loading' : ''}`}
+            aria-label="Status"
+          >
+            <div className="mobile-status-indicator">
+              <div className="status-dot"></div>
+            </div>
+            <span>{isLoading ? 'Loading' : 'Live'}</span>
+          </button>
+
+          <button 
+            onClick={() => setIsProfileOpen((prev) => !prev)}
+            className="mobile-nav-item"
+            aria-label="Profile"
+          >
+            <User size={24} />
+            <span>Profile</span>
+          </button>
+
+          {isProfileOpen && (
+            <>
+              <div 
+                className="profile-backdrop"
+                onClick={() => setIsProfileOpen(false)}
+              />
+              
+              <div 
+                className="profile-dropdown"
+                onClick={(e) => e.stopPropagation()}
               >
-                <div style={{ marginBottom: 8 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#e2e8f0" }}>
+                <div className="profile-info">
+                  <div className="profile-name">
                     {user?.name || "User"}
                   </div>
-                  <div style={{ fontSize: 11, color: "#94a3b8" }}>
+                  <div className="profile-email">
                     {user?.email || ""}
                   </div>
                 </div>
@@ -329,25 +416,16 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  style={{
-                    width: "100%",
-                    padding: "7px 10px",
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.35)",
-                    borderRadius: 6,
-                    color: "#ef4444",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
+                  className="logout-button"
                 >
                   Logout
                 </button>
               </div>
-            )}
-          </div>
-        </div>
-      </header>
+            </>
+          )}
+        </nav>
+      )}
+      
 
       {/* ================= MAIN CONTENT WITH FLEXBOX ROWS ================= */}
       <div className="dashboard-grid">
@@ -389,35 +467,6 @@ export default function Dashboard() {
 
         {/* ===== ROW 1: Safe Zones + Map + Right Panel ===== */}
         <div className="row-1">
-          {/* Safe Zones - Left */}
-          <div className="row-1-left feature-card">
-            <div className="feature-card-header">
-              <span className="feature-card-icon">🛡️</span>
-              <h2 className="feature-card-title">Safe Zones & Evacuation Routes</h2>
-            </div>
-            <div className="feature-card-body">
-              <SafeZones location={selectedLocation} />
-            </div>
-          </div>
-
-          {/* Interactive Map - Center */}
-          <div className="row-1-center feature-card map-card">
-            <div className="feature-card-header">
-              <span className="feature-card-icon">🗺️</span>
-              <h2 className="feature-card-title">Interactive Risk Map</h2>
-            </div>
-            <div className="feature-card-body">
-              <RiskMap
-                selectedLocation={selectedLocation}
-                layers={layers}
-                simulatedRainfall={effectiveRainfall}
-                onLocationSelect={handleLocationSelect}
-                riskData={riskData}
-                isLoading={isLoading}
-              />
-            </div>
-          </div>
-
           {/* Right Panel - Risk Summary + Weather */}
           <div className="row-1-right">
             {/* Risk Summary - Top Right */}
@@ -448,6 +497,36 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Interactive Map - Center */}
+          <div className="row-1-center feature-card map-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🗺️</span>
+              <h2 className="feature-card-title">Interactive Risk Map</h2>
+            </div>
+            <div className="feature-card-body">
+              <RiskMap
+                selectedLocation={selectedLocation}
+                layers={layers}
+                simulatedRainfall={effectiveRainfall}
+                onLocationSelect={handleLocationSelect}
+                riskData={riskData}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
+
+          {/* Safe Zones - Left */}
+          <div className="row-1-left feature-card">
+            <div className="feature-card-header">
+              <span className="feature-card-icon">🛡️</span>
+              <h2 className="feature-card-title">Safe Zones & Evacuation Routes</h2>
+            </div>
+            <div className="feature-card-body">
+              <SafeZones location={selectedLocation} />
+            </div>
+          </div>
+          
         </div>
 
         {/* ===== ROW 2: Risk Metrics + Terrain + Hazard ===== */}

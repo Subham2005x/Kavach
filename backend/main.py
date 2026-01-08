@@ -182,7 +182,7 @@ Provide:
 2. Why this is concerning or safe (geological perspective)
 3. Immediate safety recommendation (specific action)
 
-Keep response under 50 words, professional tone."""
+Keep response under 100 words, professional tone."""
     
     try:
         chat_explanation.last_api_call = current_time
