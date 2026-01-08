@@ -1,0 +1,53 @@
+runConfig:
+  minInstances: 0
+  maxInstances: 4
+  concurrency: 100
+
+env:
+  - variable: REACT_APP_FIREBASE_API_KEY
+    value: AIzaSyDkTaqbwBZAUzWBbAVy3APcmkg3k-Mxaro
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: REACT_APP_FIREBASE_AUTH_DOMAIN
+    value: kavach-ffc75.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: REACT_APP_FIREBASE_PROJECT_ID
+    value: kavach-ffc75
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: REACT_APP_FIREBASE_STORAGE_BUCKET
+    value: kavach-ffc75.firebasestorage.app
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: REACT_APP_FIREBASE_MESSAGING_SENDER_ID
+    value: "98880033458"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: REACT_APP_FIREBASE_APP_ID
+    value: 1:98880033458:web:56ea4503a0744259f3efab
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: REACT_APP_FIREBASE_MEASUREMENT_ID
+    value: G-819KEX2834
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: VITE_API_URL
+    value: http://localhost:8000
+    availability:
+      - BUILD
+      - RUNTIME
