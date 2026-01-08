@@ -331,8 +331,10 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ===== RISK SUMMARY CARD ===== */}
-        <div className="feature-card medium">
+        {/* ===== ROW 1: RISK SUMMARY + MAP + WEATHER ===== */}
+
+        {/* Risk Summary - Left Column */}
+        <div className="feature-card row1-left">
           <div className="feature-card-header">
             <span className="feature-card-icon">🎯</span>
             <h2 className="feature-card-title">Risk Summary</h2>
@@ -348,7 +350,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ===== INTERACTIVE MAP CARD ===== */}
+        {/* Interactive Map - Center, Spans 2 rows */}
         <div className="feature-card map-card">
           <div className="feature-card-header">
             <span className="feature-card-icon">🗺️</span>
@@ -365,8 +367,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ===== WEATHER CONDITIONS CARD ===== */}
-        <div className="feature-card medium">
+        {/* Weather Conditions - Right Column */}
+        <div className="feature-card row1-right">
           <div className="feature-card-header">
             <span className="feature-card-icon">🌦️</span>
             <h2 className="feature-card-title">Weather Conditions</h2>
@@ -376,9 +378,9 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ===== AI ANALYSIS CARD ===== */}
+        {/* AI Analysis Card - Positioned under Risk Summary on left */}
         {(aiExplanation || (isLoading && loadingStage.includes("AI"))) && (
-          <div className="feature-card large">
+          <div className="feature-card row2-left">
             <div className="feature-card-header">
               <span className="feature-card-icon">🤖</span>
               <h2 className="feature-card-title">AI Expert Analysis</h2>
@@ -398,20 +400,11 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* ===== TERRAIN ELEVATION CHART CARD ===== */}
-        <div className="feature-card large">
-          <div className="feature-card-header">
-            <span className="feature-card-icon">⛰️</span>
-            <h2 className="feature-card-title">Terrain Elevation Profile</h2>
-          </div>
-          <div className="feature-card-body">
-            <TerrainElevationChart terrainProfile={terrainProfile} location={selectedLocation} />
-          </div>
-        </div>
+        {/* ===== ROW 2: RISK METRICS (with Safety Advisory inside) + TERRAIN + HAZARD ===== */}
 
-        {/* ===== RISK METRICS CARD ===== */}
+        {/* Risk Metrics with Safety Advisory - Left */}
         {riskData && (
-          <div className="feature-card large">
+          <div className="feature-card row2-content-left">
             <div className="feature-card-header">
               <span className="feature-card-icon">📈</span>
               <h2 className="feature-card-title">Detailed Risk Metrics</h2>
@@ -443,13 +436,27 @@ export default function Dashboard() {
                 <div className="recommendation-text">{riskData.recommendation}</div>
               </div>
 
-              <SafetyAdvisory riskLevel={currentRisk} />
+              {/* SAFETY ADVISORY MOVED INSIDE THIS CARD */}
+              <div className="safety-advisory-section">
+                <SafetyAdvisory riskLevel={currentRisk} />
+              </div>
             </div>
           </div>
         )}
 
-        {/* ===== HAZARD RADAR CHART CARD ===== */}
-        <div className="feature-card large">
+        {/* Terrain Elevation Chart - Center */}
+        <div className="feature-card row2-center">
+          <div className="feature-card-header">
+            <span className="feature-card-icon">⛰️</span>
+            <h2 className="feature-card-title">Terrain Elevation Profile</h2>
+          </div>
+          <div className="feature-card-body">
+            <TerrainElevationChart terrainProfile={terrainProfile} location={selectedLocation} />
+          </div>
+        </div>
+
+        {/* Hazard Radar Chart - Right */}
+        <div className="feature-card row2-right">
           <div className="feature-card-header">
             <span className="feature-card-icon">📡</span>
             <h2 className="feature-card-title">Multi-Hazard Risk Profile</h2>
@@ -459,8 +466,10 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ===== RAINFALL TREND CHART CARD ===== */}
-        <div className="feature-card large">
+        {/* ===== ROW 3: RAINFALL + MAP LAYERS + SIMULATION ===== */}
+
+        {/* 24-Hour Rainfall Forecast - Left */}
+        <div className="feature-card row3-left">
           <div className="feature-card-header">
             <span className="feature-card-icon">🌧️</span>
             <h2 className="feature-card-title">24-Hour Rainfall Forecast</h2>
@@ -470,8 +479,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ===== LAYER CONTROLS CARD ===== */}
-        <div className="feature-card medium">
+        {/* Map Layers - Center */}
+        <div className="feature-card row3-center">
           <div className="feature-card-header">
             <span className="feature-card-icon">🗺️</span>
             <h2 className="feature-card-title">Map Layers</h2>
@@ -481,8 +490,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ===== SIMULATION MODE CARD ===== */}
-        <div className="feature-card medium">
+        {/* Simulation Mode - Right */}
+        <div className="feature-card row3-right">
           <div className="feature-card-header">
             <span className="feature-card-icon">🔬</span>
             <h2 className="feature-card-title">Simulation Mode</h2>
@@ -501,4 +510,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
