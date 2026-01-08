@@ -17,7 +17,7 @@ const SimulationMode = ({ isActive, onToggle, rainfall, onRainfallChange, onRese
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          fontSize: 15,
+          fontSize: 16,
           letterSpacing: '0.3px'
         }}>
           <Cloud style={{ width: 18, height: 18, color: '#60a5fa' }} />
@@ -121,7 +121,7 @@ const SimulationMode = ({ isActive, onToggle, rainfall, onRainfallChange, onRese
             border: '1px solid rgba(59,130,246,0.3)',
             borderRadius: 8,
             padding: 12,
-            fontSize: 12,
+            fontSize: 14,
             color: '#bfdbfe'
           }}>
             <p style={{ fontWeight: 600, marginBottom: 4 }}>Simulation Active</p>

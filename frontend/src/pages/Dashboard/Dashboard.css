@@ -36,12 +36,12 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 17px;
 }
 
 .logo-text-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 20px;
 }
 
 .logo-text-subtitle {
@@ -62,8 +62,8 @@
   border-radius: 6px;
   padding: 6px 13px;
   color: #60a5fa;
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -85,7 +85,8 @@
 
 .live-indicator {
   color: #34d399;
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 /* Main Grid - 3 Column Layout with wider map */
@@ -126,12 +127,12 @@
 }
 
 .feature-card-icon {
-  font-size: 20px;
+  font-size: 25px;
   line-height: 1;
 }
 
 .feature-card-title {
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 600;
   color: #e2e8f0;
 }
@@ -277,14 +278,14 @@
 }
 
 .ai-panel-title {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 6px;
   color: #60a5fa;
 }
 
 .ai-panel-content {
-  font-size: 10px;
+  font-size: 14px;
   line-height: 1.6;
   color: #cbd5e1;
 }
@@ -316,13 +317,13 @@
 }
 
 .terrain-title {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 600;
   margin-bottom: 6px;
 }
 
 .terrain-info {
-  font-size: 9px;
+  font-size: 11px;
   color: #94a3b8;
 }
 
@@ -358,7 +359,7 @@
 }
 
 .risk-metric-label {
-  font-size: 9px;
+  font-size: px;
   color: #94a3b8;
 }
 
@@ -409,13 +410,13 @@
 }
 
 .recommendation-label {
-  font-size: 9px;
+  font-size: 11px;
   color: #94a3b8;
   margin-bottom: 2px;
 }
 
 .recommendation-text {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 

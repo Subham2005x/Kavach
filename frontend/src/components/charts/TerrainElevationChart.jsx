@@ -65,7 +65,7 @@ const TerrainElevationChart = ({ terrainProfile = [], location }) => {
         <Mountain size={18} color="#60a5fa" /> {/* was 20 */}
         <h3
           style={{
-            fontSize: "13px", // was 15px
+            fontSize: "16px", // was 15px
             fontWeight: 600,
             color: "#e2e8f0",
             margin: 0,
@@ -92,7 +92,7 @@ const TerrainElevationChart = ({ terrainProfile = [], location }) => {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: "10px", color: "#94a3b8", marginBottom: "3px" }}>Max</div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "3px" }}>Max</div>
           <div style={{ fontSize: "14px", fontWeight: 700, color: "#60a5fa" }}>
             {maxElevation.toFixed(0)}m
           </div>
@@ -106,7 +106,7 @@ const TerrainElevationChart = ({ terrainProfile = [], location }) => {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: "10px", color: "#94a3b8", marginBottom: "3px" }}>Avg</div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "3px" }}>Avg</div>
           <div style={{ fontSize: "14px", fontWeight: 700, color: "#34d399" }}>
             {avgElevation.toFixed(0)}m
           </div>
@@ -120,7 +120,7 @@ const TerrainElevationChart = ({ terrainProfile = [], location }) => {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: "10px", color: "#94a3b8", marginBottom: "3px" }}>Min</div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "3px" }}>Min</div>
           <div style={{ fontSize: "14px", fontWeight: 700, color: "#fbbf24" }}>
             {minElevation.toFixed(0)}m
           </div>
@@ -239,7 +239,7 @@ const TerrainElevationChart = ({ terrainProfile = [], location }) => {
           marginTop: "10px", // was 12px
           paddingTop: "10px", // was 12px
           borderTop: "1px solid rgba(30, 41, 59, 0.6)",
-          fontSize: "10px", // was 11px
+          fontSize: "12px", // was 11px
           color: "#94a3b8",
         }}
       >
