@@ -615,3 +615,602 @@
     font-size: 12px;
   }
 }
+@media (max-width: 1400px) {
+  .dashboard-grid {
+    grid-template-columns: 0.9fr 1.65fr 0.9fr;
+  }
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 0.85fr 1.6fr 0.85fr;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .feature-card.row1-left {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 280px;
+  }
+
+  .feature-card.map-card {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 400px;
+  }
+
+  .feature-card.row1-right {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 280px;
+  }
+
+  .feature-card.row2-left {
+    grid-column: 1;
+    grid-row: 3;
+    min-height: 280px;
+  }
+
+  .feature-card.row2-content-left {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    min-height: 350px;
+  }
+
+  .feature-card.row2-center {
+    grid-column: 1 / -1;
+    grid-row: 5;
+    min-height: 350px;
+  }
+
+  .feature-card.row2-right {
+    grid-column: 1 / -1;
+    grid-row: 6;
+    min-height: 350px;
+  }
+
+  .feature-card.row3-left {
+    grid-column: 1;
+    grid-row: 7;
+    min-height: 280px;
+  }
+
+  .feature-card.row3-center {
+    grid-column: 2;
+    grid-row: 7;
+    min-height: 280px;
+  }
+
+  .feature-card.row3-right {
+    grid-column: 1 / -1;
+    grid-row: 8;
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .dashboard-header {
+    height: auto;
+    min-height: 52px;
+    padding: 8px 10px;
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .feature-card {
+    border-radius: 10px;
+    min-height: auto;
+  }
+
+  .feature-card-title {
+    font-size: 12px;
+  }
+
+  .feature-card-icon {
+    font-size: 18px;
+  }
+
+  .feature-card-body {
+    padding: 12px;
+  }
+
+  /* Reset all grid positioning for mobile */
+  .feature-card.row1-left,
+  .feature-card.row1-right,
+  .feature-card.row2-left,
+  .feature-card.row2-content-left,
+  .feature-card.row2-center,
+  .feature-card.row2-right,
+  .feature-card.row3-left,
+  .feature-card.row3-center,
+  .feature-card.row3-right {
+    grid-column: 1;
+    grid-row: auto;
+    min-height: 250px;
+  }
+
+  .feature-card.map-card {
+    grid-column: 1;
+    grid-row: auto;
+    min-height: 280px;
+  }
+
+  .feature-card.map-card .feature-card-body {
+    padding: 0;
+    height: calc(100% - 46px);
+  }
+
+  /* Header responsive */
+  .dashboard-header {
+    height: auto;
+    min-height: 52px;
+    flex-wrap: nowrap;
+    padding: 8px 10px;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .header-logo {
+    gap: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .logo-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+
+  .logo-text-title {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+  }
+
+  .logo-text-subtitle {
+    font-size: 9px;
+    display: none;
+  }
+
+  .location-button {
+    display: none;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .loading-indicator {
+    font-size: 10px;
+    gap: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+
+  .live-indicator {
+    font-size: 10px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .location-button svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+
+  .header-actions {
+    margin-left: auto;
+    gap: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .loading-indicator {
+    font-size: 10px;
+    gap: 4px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+
+  .live-indicator {
+    font-size: 9px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  /* Risk metrics grid adjustments */
+  .risk-metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .risk-metric-label {
+    font-size: 8px;
+  }
+
+  .risk-metric-value {
+    font-size: 12px;
+  }
+
+  /* Safety advisory adjustments */
+  .safety-advisory-section {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .safety-advisory-list {
+    gap: 4px;
+  }
+
+  .safety-advisory-item {
+    font-size: 8px;
+    gap: 4px;
+  }
+
+  .safety-advisory-title {
+    font-size: 9px;
+  }
+
+  .safety-risk-level-value {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-grid {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .feature-card {
+    border-radius: 8px;
+  }
+
+  .feature-card-header {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .feature-card-icon {
+    font-size: 16px;
+  }
+
+  .feature-card-title {
+    font-size: 11px;
+  }
+
+  .feature-card-body {
+    padding: 10px;
+  }
+
+  .risk-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .recommendation-text {
+    font-size: 9px;
+  }
+
+  .ai-panel-content {
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+  .header-left {
+    gap: 6px;
+  }
+
+  .logo-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .logo-text-title {
+    font-size: 11px;
+  }
+
+  .logo-text-subtitle {
+    font-size: 8px;
+  }
+
+  .location-button {
+    padding: 4px 8px;
+    font-size: 9px;
+    gap: 4px;
+  }
+
+  .location-button svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    grid-template-rows: 48px 1fr;
+  }
+
+  .dashboard-header {
+    padding: 8px 10px;
+    height: auto;
+  }
+
+  .dashboard-grid {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .feature-card {
+    border-radius: 8px;
+    border: 1px solid rgba(30, 41, 59, 0.6);
+  }
+
+  .feature-card-header {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .feature-card-icon {
+    font-size: 14px;
+  }
+
+  .feature-card-title {
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .feature-card-body {
+    padding: 8px;
+  }
+
+  .feature-card.row1-left,
+  .feature-card.row1-right,
+  .feature-card.map-card,
+  .feature-card.row2-left,
+  .feature-card.row2-content-left,
+  .feature-card.row2-center,
+  .feature-card.row2-right,
+  .feature-card.row3-left,
+  .feature-card.row3-center,
+  .feature-card.row3-right {
+    min-height: 220px;
+  }
+
+  .header-left {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .logo-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 9px;
+  }
+
+  .logo-text-title {
+    font-size: 10px;
+  }
+
+  .logo-text-subtitle {
+    font-size: 7px;
+  }
+
+  .location-button {
+    padding: 3px 6px;
+    font-size: 8px;
+    gap: 3px;
+  }
+
+  .location-button svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .loading-indicator {
+    font-size: 9px;
+  }
+
+  .live-indicator {
+    font-size: 9px;
+  }
+
+  /* Risk metrics */
+  .risk-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .risk-metric-label {
+    font-size: 7px;
+  }
+
+  .risk-metric-value {
+    font-size: 11px;
+  }
+
+  .recommendation-label {
+    font-size: 8px;
+  }
+
+  .recommendation-text {
+    font-size: 8px;
+  }
+
+  /* Safety advisory */
+  .safety-advisory-section {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  .safety-advisory-title {
+    font-size: 8px;
+  }
+
+  .safety-advisory-item {
+    font-size: 7px;
+    gap: 3px;
+  }
+
+  .safety-risk-level {
+    margin-top: 6px;
+    padding: 6px;
+  }
+
+  .safety-risk-level-label {
+    font-size: 7px;
+  }
+
+  .safety-risk-level-value {
+    font-size: 10px;
+  }
+
+  /* AI panel */
+  .ai-panel-content {
+    font-size: 8px;
+    line-height: 1.3;
+  }
+
+  .ai-loading {
+    font-size: 8px;
+    gap: 6px;
+  }
+
+  .ai-loading-spinner {
+    width: 10px;
+    height: 10px;
+    border: 2px solid #60a5fa;
+  }
+}
+
+@media (max-width: 360px) {
+  .dashboard-grid {
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .feature-card {
+    border-radius: 6px;
+  }
+
+  .feature-card-header {
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .feature-card-icon {
+    font-size: 12px;
+  }
+
+  .feature-card-title {
+    font-size: 9px;
+  }
+
+  .feature-card-body {
+    padding: 6px;
+  }
+
+  .feature-card.row1-left,
+  .feature-card.row1-right,
+  .feature-card.map-card,
+  .feature-card.row2-left,
+  .feature-card.row2-content-left,
+  .feature-card.row2-center,
+  .feature-card.row2-right,
+  .feature-card.row3-left,
+  .feature-card.row3-center,
+  .feature-card.row3-right {
+    min-height: 180px;
+  }
+
+  .header-logo {
+    gap: 3px;
+  }
+
+  .logo-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+  }
+
+  .logo-text-title {
+    font-size: 9px;
+  }
+
+  .logo-text-subtitle {
+    display: none;
+  }
+
+  .location-button {
+    padding: 2px 4px;
+    font-size: 7px;
+    gap: 2px;
+  }
+
+  .location-button svg {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+
+
+
