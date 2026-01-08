@@ -1,0 +1,8 @@
+# Firebase
+.firebase/
+.firebaserc
+firebase-debug.log
+
+# Build
+dist/
+build/

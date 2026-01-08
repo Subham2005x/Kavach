@@ -221,6 +221,26 @@
   min-height: 328px;
 }
 
+/* ROW 4 - Safe Zones & Preparedness */
+.feature-card.row4-left {
+  grid-column: 1 / 2;
+  grid-row: 5;
+  min-height: 400px;
+}
+
+.feature-card.row4-right {
+  grid-column: 2 / 4;
+  grid-row: 5;
+  min-height: 400px;
+}
+
+/* ROW 5 - Local News */
+.feature-card.row5-full {
+  grid-column: 1 / 4;
+  grid-row: 6;
+  min-height: 350px;
+}
+
 /* Loading Overlay */
 .loading-overlay {
   position: absolute;

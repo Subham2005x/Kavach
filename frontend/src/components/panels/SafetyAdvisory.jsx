@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shield, CheckCircle } from 'lucide-react';
 
-const SafetyAdvisory = ({ riskLevel }) => {
+const SafetyAdvisory = ({ riskLevel, hasData = true }) => {
   const advisories = {
     severe: [
       'Avoid mountainous and elevated terrain',
@@ -60,25 +60,47 @@ const SafetyAdvisory = ({ riskLevel }) => {
         <Shield style={{ width: 18, height: 18, color: colors.accent }} />
         Safety Advisory
       </h3>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {currentAdvisories.map((advisory, index) => (
-          <div key={index} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-            <CheckCircle style={{ width: 16, height: 16, color: colors.accent, flexShrink: 0, marginTop: 2 }} />
-            <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 }}>{advisory}</p>
+      {!hasData ? (
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '30px 20px',
+          color: '#64748b',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '40px', marginBottom: '10px', opacity: 0.3 }}>🛡️</div>
+          <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: '4px', color: '#94a3b8' }}>
+            No Safety Advisory
           </div>
-        ))}
-      </div>
-      <div style={{
-        marginTop: 12,
-        paddingTop: 12,
-        borderTop: '1px solid rgba(51,65,85,0.5)',
-        background: colors.bg,
-        border: `1px solid ${colors.border}`,
-        borderRadius: 8,
-        padding: 10
-      }}>
-        <p style={{ fontSize: 12, color: '#94a3b8' }}>Risk Level: <span style={{ fontWeight: 700, color: colors.text, letterSpacing: '0.5px' }}>{riskLevel?.toUpperCase() || 'MODERATE'}</span></p>
-      </div>
+          <div style={{ fontSize: '11px', color: '#64748b' }}>
+            Select a location to view safety recommendations
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {currentAdvisories.map((advisory, index) => (
+              <div key={index} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <CheckCircle style={{ width: 16, height: 16, color: colors.accent, flexShrink: 0, marginTop: 2 }} />
+                <p style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.5 }}>{advisory}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{
+            marginTop: 12,
+            paddingTop: 12,
+            borderTop: '1px solid rgba(51,65,85,0.5)',
+            background: colors.bg,
+            border: `1px solid ${colors.border}`,
+            borderRadius: 8,
+            padding: 10
+          }}>
+            <p style={{ fontSize: 12, color: '#94a3b8' }}>Risk Level: <span style={{ fontWeight: 700, color: colors.text, letterSpacing: '0.5px' }}>{riskLevel?.toUpperCase() || 'MODERATE'}</span></p>
+          </div>
+        </>
+      )}
     </div>
   );
 };

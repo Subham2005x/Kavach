@@ -1,10 +1,54 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { CloudRain } from 'lucide-react';
 
-const RainfallTrendChart = ({ simulatedRainfall }) => {
-  // Generate rainfall trend data
+const RainfallTrendChart = ({ simulatedRainfall, location }) => {
+  const [forecastData, setForecastData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch real weather forecast data
+  useEffect(() => {
+    const fetchForecast = async () => {
+      const lat = location?.coordinates?.lat || location?.lat || 28.5;
+      const lng = location?.coordinates?.lng || location?.lng || 82.0;
+
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:8000/weather_forecast?lat=${lat}&lon=${lng}`
+        );
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          setForecastData(data.forecast);
+        }
+      } catch (error) {
+        console.error('Weather forecast error:', error);
+        setForecastData(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchForecast();
+    // Refresh forecast every 30 minutes
+    const interval = setInterval(fetchForecast, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [location]);
+
+  // Generate rainfall trend data (use real forecast or fallback to simulated)
   const trendData = useMemo(() => {
     const hours = 24;
+    
+    // If we have real forecast data, use it
+    if (forecastData && forecastData.length > 0) {
+      return forecastData.map((point, i) => ({
+        hour: i,
+        rainfall: point.rainfall || 0,
+        accumulated: 0 // Will calculate below
+      }));
+    }
+    
+    // Fallback: Generate simulated data
     const baseRainfall = simulatedRainfall || 50;
     
     return Array.from({ length: hours }, (_, i) => {
@@ -18,7 +62,7 @@ const RainfallTrendChart = ({ simulatedRainfall }) => {
         accumulated: 0 // Will calculate below
       };
     });
-  }, [simulatedRainfall]);
+  }, [forecastData, simulatedRainfall]);
 
   // Calculate accumulated rainfall
   let accumulated = 0;
@@ -70,8 +114,18 @@ const RainfallTrendChart = ({ simulatedRainfall }) => {
             color: '#e2e8f0',
             margin: 0
           }}>
-            24-Hour Rainfall Forecast
+            Rainfall Forecast
           </h3>
+          {isLoading && (
+            <span style={{ fontSize: 10, color: '#64748b', marginLeft: 4 }}>
+              Updating.
+            </span>
+          )}
+          {!isLoading && forecastData && (
+            <span style={{ fontSize: 10, color: '#22c55e', marginLeft: 4 }}>
+              ● Live
+            </span>
+          )}
         </div>
         <div style={{
           background: 'rgba(6, 182, 212, 0.1)',
@@ -98,9 +152,11 @@ const RainfallTrendChart = ({ simulatedRainfall }) => {
           borderRadius: '8px',
           textAlign: 'center'
         }}>
-          <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Current</div>
+          <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>
+            {forecastData ? 'Now' : 'Current'}
+          </div>
           <div style={{ fontSize: '16px', fontWeight: 700, color: '#06b6d4' }}>
-            {simulatedRainfall || 50}mm/h
+            {forecastData ? (forecastData[0]?.rainfall || 0).toFixed(1) : (simulatedRainfall || 50)}mm
           </div>
         </div>
         <div style={{
@@ -111,7 +167,7 @@ const RainfallTrendChart = ({ simulatedRainfall }) => {
         }}>
           <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Peak</div>
           <div style={{ fontSize: '16px', fontWeight: 700, color: '#ef4444' }}>
-            {maxRainfall.toFixed(0)}mm/h
+            {maxRainfall.toFixed(1)}mm
           </div>
         </div>
         <div style={{
@@ -122,7 +178,7 @@ const RainfallTrendChart = ({ simulatedRainfall }) => {
         }}>
           <div style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '4px' }}>Avg</div>
           <div style={{ fontSize: '16px', fontWeight: 700, color: '#22c55e' }}>
-            {(totalAccumulated / 24).toFixed(0)}mm/h
+            {(totalAccumulated / 24).toFixed(1)}mm
           </div>
         </div>
       </div>

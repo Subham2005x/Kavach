@@ -6,6 +6,10 @@ import { User } from "lucide-react";
 import LayerToggle from "@/components/map/LayerToggle";
 import SimulationMode from "@/components/controls/SimulationMode";
 import SafetyAdvisory from "@/components/panels/SafetyAdvisory";
+import SafeZones from "@/components/panels/SafeZones";
+import PreparednessChecklist from "@/components/panels/PreparednessChecklist";
+import LocalNews from "@/components/panels/LocalNews";
+import AlertSettings from "@/components/panels/AlertSettings";
 import RiskMap from "@/components/map/RiskMap";
 import RiskSummaryPanel from "@/components/panels/RiskSummaryPanel";
 import WeatherPanel from "@/components/panels/WeatherPanel";
@@ -36,6 +40,7 @@ export default function Dashboard() {
   // Profile dropdown (store {name, email})
   const [user, setUser] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [showAlertSettings, setShowAlertSettings] = useState(false);
 
   // Backend integration state
   const [riskData, setRiskData] = useState(null);
@@ -48,11 +53,17 @@ export default function Dashboard() {
   const effectiveRainfall = simulationActive ? simulatedRainfall : 0;
 
   const currentRisk = useMemo(() => {
+    // Use backend risk data if available
     if (riskData?.alert_level) {
       const level = riskData.alert_level.toLowerCase();
-      return level === "red" ? "severe" : level === "yellow" ? "high" : "moderate";
+      // Map backend alert levels (RED/YELLOW/GREEN) to frontend risk levels
+      if (level === "red") return "severe";
+      if (level === "yellow") return "high";
+      if (level === "green") return "low";
+      return "moderate"; // fallback
     }
-
+    
+    // Fallback to client-side calculation when backend data not available
     if (!selectedLocation) return "moderate";
     if (effectiveRainfall > 120) return "severe";
     if (effectiveRainfall > 80) return "high";
@@ -236,6 +247,40 @@ export default function Dashboard() {
 
           <div className="live-indicator">● Live</div>
 
+          {/* Alert Bell */}
+          <button
+            onClick={() => setShowAlertSettings(true)}
+            className="alert-bell-button"
+            style={{
+              background: 'rgba(251, 146, 60, 0.15)',
+              border: '1px solid rgba(251, 146, 60, 0.3)',
+              borderRadius: '8px',
+              padding: '8px 12px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              color: '#fb923c',
+              fontSize: '13px',
+              fontWeight: 500,
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(251, 146, 60, 0.25)';
+              e.currentTarget.style.borderColor = 'rgba(251, 146, 60, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(251, 146, 60, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(251, 146, 60, 0.3)';
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+            Alerts
+          </button>
+
           {/* Profile */}
           <div style={{ position: "relative" }}>
             <button
@@ -379,70 +424,106 @@ export default function Dashboard() {
         </div>
 
         {/* AI Analysis Card - Positioned under Risk Summary on left */}
-        {(aiExplanation || (isLoading && loadingStage.includes("AI"))) && (
-          <div className="feature-card row2-left">
-            <div className="feature-card-header">
-              <span className="feature-card-icon">🤖</span>
-              <h2 className="feature-card-title">AI Expert Analysis</h2>
-            </div>
-            <div className="feature-card-body">
-              <div className="ai-panel-content">
-                {isLoading && loadingStage.includes("AI") ? (
-                  <div className="ai-loading">
-                    <div className="ai-loading-spinner"></div>
-                    Generating expert analysis...
+        <div className="feature-card row2-left">
+          <div className="feature-card-header">
+            <span className="feature-card-icon">🤖</span>
+            <h2 className="feature-card-title">AI Expert Analysis</h2>
+          </div>
+          <div className="feature-card-body">
+            <div className="ai-panel-content">
+              {isLoading && loadingStage.includes("AI") ? (
+                <div className="ai-loading">
+                  <div className="ai-loading-spinner"></div>
+                  Generating expert analysis...
+                </div>
+              ) : aiExplanation ? (
+                aiExplanation
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '40px 20px',
+                  color: '#64748b',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>🗺️</div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '6px', color: '#94a3b8' }}>
+                    No Analysis Available
                   </div>
-                ) : (
-                  aiExplanation
-                )}
-              </div>
+                  <div style={{ fontSize: '12px', color: '#64748b' }}>
+                    Select a location on the map to get AI-powered risk analysis
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
         {/* ===== ROW 2: RISK METRICS (with Safety Advisory inside) + TERRAIN + HAZARD ===== */}
 
         {/* Risk Metrics with Safety Advisory - Left */}
-        {riskData && (
-          <div className="feature-card row2-content-left">
-            <div className="feature-card-header">
-              <span className="feature-card-icon">📈</span>
-              <h2 className="feature-card-title">Detailed Risk Metrics</h2>
-            </div>
-            <div className="feature-card-body">
-              <div className="risk-metrics-grid">
-                <div className="risk-metric-item">
-                  <div className="risk-metric-label">Landslide Risk</div>
-                  <div className="risk-metric-value landslide">{riskData.landslide_risk}%</div>
-                </div>
-                <div className="risk-metric-item">
-                  <div className="risk-metric-label">Flood Risk</div>
-                  <div className="risk-metric-value flood">{riskData.flood_risk}%</div>
-                </div>
-                <div className="risk-metric-item">
-                  <div className="risk-metric-label">Slope Angle</div>
-                  <div className="risk-metric-value slope">{riskData.slope_calculated}°</div>
-                </div>
-                <div className="risk-metric-item">
-                  <div className="risk-metric-label">Alert Level</div>
-                  <div className={`risk-metric-value ${riskData.alert_level.toLowerCase()}`}>
-                    {riskData.alert_level}
+        <div className="feature-card row2-content-left">
+          <div className="feature-card-header">
+            <span className="feature-card-icon">📈</span>
+            <h2 className="feature-card-title">Detailed Risk Metrics</h2>
+          </div>
+          <div className="feature-card-body">
+            {riskData ? (
+              <>
+                <div className="risk-metrics-grid">
+                  <div className="risk-metric-item">
+                    <div className="risk-metric-label">Landslide Risk</div>
+                    <div className="risk-metric-value landslide">{riskData.landslide_risk}%</div>
+                  </div>
+                  <div className="risk-metric-item">
+                    <div className="risk-metric-label">Flood Risk</div>
+                    <div className="risk-metric-value flood">{riskData.flood_risk}%</div>
+                  </div>
+                  <div className="risk-metric-item">
+                    <div className="risk-metric-label">Slope Angle</div>
+                    <div className="risk-metric-value slope">{riskData.slope_calculated}°</div>
+                  </div>
+                  <div className="risk-metric-item">
+                    <div className="risk-metric-label">Alert Level</div>
+                    <div className={`risk-metric-value ${riskData.alert_level.toLowerCase()}`}>
+                      {riskData.alert_level}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className={`risk-recommendation ${riskData.alert_level.toLowerCase()}`}>
-                <div className="recommendation-label">Recommendation</div>
-                <div className="recommendation-text">{riskData.recommendation}</div>
-              </div>
+                <div className={`risk-recommendation ${riskData.alert_level.toLowerCase()}`}>
+                  <div className="recommendation-label">Recommendation</div>
+                  <div className="recommendation-text">{riskData.recommendation}</div>
+                </div>
 
-              {/* SAFETY ADVISORY MOVED INSIDE THIS CARD */}
-              <div className="safety-advisory-section">
-                <SafetyAdvisory riskLevel={currentRisk} />
+                {/* SAFETY ADVISORY MOVED INSIDE THIS CARD */}
+                <div className="safety-advisory-section">
+                  <SafetyAdvisory riskLevel={currentRisk} hasData={!!riskData} />
+                </div>
+              </>
+            ) : (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px 20px',
+                color: '#64748b',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>📊</div>
+                <div style={{ fontSize: '14px', fontWeight: 500, marginBottom: '6px', color: '#94a3b8' }}>
+                  No Risk Data Available
+                </div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>
+                  Select a location on the map to get detailed risk metrics
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Terrain Elevation Chart - Center */}
         <div className="feature-card row2-center">
@@ -475,7 +556,10 @@ export default function Dashboard() {
             <h2 className="feature-card-title">24-Hour Rainfall Forecast</h2>
           </div>
           <div className="feature-card-body">
-            <RainfallTrendChart simulatedRainfall={effectiveRainfall} />
+            <RainfallTrendChart 
+              simulatedRainfall={effectiveRainfall} 
+              location={selectedLocation}
+            />
           </div>
         </div>
 
@@ -506,7 +590,51 @@ export default function Dashboard() {
             />
           </div>
         </div>
+
+        {/* ===== ROW 4: SAFE ZONES + PREPAREDNESS CHECKLIST ===== */}
+
+        {/* Safe Zones & Evacuation Routes - Left */}
+        <div className="feature-card row4-left">
+          <div className="feature-card-header">
+            <span className="feature-card-icon">🛡️</span>
+            <h2 className="feature-card-title">Safe Zones & Evacuation Routes</h2>
+          </div>
+          <div className="feature-card-body">
+            <SafeZones location={selectedLocation} />
+          </div>
+        </div>
+
+        {/* Emergency Preparedness Checklist - Right */}
+        <div className="feature-card row4-right">
+          <div className="feature-card-header">
+            <span className="feature-card-icon">✅</span>
+            <h2 className="feature-card-title">Emergency Preparedness</h2>
+          </div>
+          <div className="feature-card-body">
+            <PreparednessChecklist riskLevel={currentRisk} />
+          </div>
+        </div>
+
+        {/* ===== ROW 5: LOCAL NEWS ===== */}
+
+        {/* Local Weather & Disaster News - Full Width */}
+        <div className="feature-card row5-full">
+          <div className="feature-card-header">
+            <span className="feature-card-icon">📰</span>
+            <h2 className="feature-card-title">Local Weather & Disaster News</h2>
+          </div>
+          <div className="feature-card-body">
+            <LocalNews location={selectedLocation} />
+          </div>
+        </div>
       </div>
+
+      <AlertSettings 
+        isOpen={showAlertSettings}
+        onClose={() => setShowAlertSettings(false)}
+        riskData={riskData}
+        location={selectedLocation}
+      />
     </div>
   );
 }

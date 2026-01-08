@@ -9,3 +9,5 @@ numpy
 joblib
 scikit-learn
 scipy
+firebase-admin
+twilio

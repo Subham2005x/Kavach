@@ -11,6 +11,7 @@ const RiskMap = ({ onLocationSelect, selectedLocation, layers, simulatedRainfall
   const dangerZoneCircleRef = useRef(null);
   const searchTimeoutRef = useRef(null);
   const tileLayerRef = useRef(null);
+  const labelLayerRef = useRef(null); // For satellite view labels
   const layerGroupsRef = useRef({
     landslide: null,
     flood: null,
@@ -314,25 +315,68 @@ const RiskMap = ({ onLocationSelect, selectedLocation, layers, simulatedRainfall
 
       // Determine color based on risk level from backend or default
       let riskColor;
+      let riskLabel;
       if (riskData?.alert_level) {
-        riskColor = riskData.alert_level === 'RED' ? '#ef4444' : 
-                   riskData.alert_level === 'YELLOW' ? '#eab308' : '#22c55e';
+        // Use actual backend risk data
+        if (riskData.alert_level === 'RED') {
+          riskColor = '#ef4444'; // Red for high risk
+          riskLabel = 'HIGH RISK';
+        } else if (riskData.alert_level === 'YELLOW') {
+          riskColor = '#eab308'; // Yellow for moderate risk
+          riskLabel = 'MODERATE';
+        } else {
+          riskColor = '#22c55e'; // Green for low risk
+          riskLabel = 'LOW RISK';
+        }
       } else {
-        riskColor = selectedLocation.risk === 'high' ? '#ef4444' : 
-                   selectedLocation.risk === 'moderate' ? '#eab308' : '#22c55e';
+        // Default color while analyzing
+        riskColor = '#3b82f6'; // Blue for analyzing
+        riskLabel = 'ANALYZING...';
       }
 
       const customIcon = L.divIcon({
-        html: `<div style="background-color: ${riskColor}; width: 24px; height: 24px; border-radius: 50%; box-shadow: 0 0 20px ${riskColor}; border: 3px solid white; animation: pulse 2s infinite;"></div>`,
-        iconSize: [24, 24],
+        html: `
+          <div style="
+            background-color: ${riskColor}; 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            box-shadow: 0 0 20px ${riskColor}, 0 4px 12px rgba(0,0,0,0.3); 
+            border: 4px solid white; 
+            animation: pulse 2s infinite;
+            position: relative;
+            cursor: pointer;
+          ">
+            <div style="
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 12px;
+              height: 12px;
+              background-color: white;
+              border-radius: 50%;
+              opacity: 0.9;
+            "></div>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16], // Center the icon at the coordinate (half of iconSize)
+        popupAnchor: [0, -16], // Position popup above the marker
         className: 'selected-marker'
       });
 
       const popupContent = selectedLocation.source === 'map-click' 
-        ? `<strong>${selectedLocation.name}</strong><br/>
-           Lat: ${selectedLocation.lat.toFixed(4)}<br/>
-           Lng: ${selectedLocation.lng.toFixed(4)}<br/>
-           ${!riskData ? '<em style="color: #60a5fa;">⏳ Analyzing risk...</em>' : '<em style="color: #10b981;">✓ Analysis complete</em>'}`
+        ? `<div style="min-width: 200px;">
+           <strong style="font-size: 14px;">${selectedLocation.name}</strong><br/>
+           <span style="color: #64748b; font-size: 12px;">
+             Lat: ${selectedLocation.lat.toFixed(4)} | Lng: ${selectedLocation.lng.toFixed(4)}
+           </span><br/>
+           <div style="margin-top: 8px; padding: 6px; background: ${riskColor}15; border-left: 3px solid ${riskColor}; border-radius: 4px;">
+             <strong style="color: ${riskColor}; font-size: 13px;">${riskLabel}</strong>
+             ${riskData?.landslide_risk ? `<br/><span style="font-size: 12px;">Landslide: ${riskData.landslide_risk}%</span>` : ''}
+           </div>
+           </div>`
         : `<strong>${selectedLocation.name}</strong>`;
 
       markerRef.current = L.marker(
@@ -461,6 +505,12 @@ const RiskMap = ({ onLocationSelect, selectedLocation, layers, simulatedRainfall
     // Remove current tile layer
     map.current.removeLayer(tileLayerRef.current);
 
+    // Remove label layer if it exists
+    if (labelLayerRef.current) {
+      map.current.removeLayer(labelLayerRef.current);
+      labelLayerRef.current = null;
+    }
+
     // Add new tile layer based on view mode
     if (isSatelliteView) {
       // Satellite imagery from Esri
@@ -471,8 +521,18 @@ const RiskMap = ({ onLocationSelect, selectedLocation, layers, simulatedRainfall
           maxZoom: 19,
         }
       ).addTo(map.current);
+
+      // Add labels overlay for satellite view (place names, roads, borders)
+      labelLayerRef.current = L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+        {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          maxZoom: 19,
+          pane: 'shadowPane' // Ensures labels appear on top
+        }
+      ).addTo(map.current);
     } else {
-      // Dark map view
+      // Dark map view (already has labels built-in)
       tileLayerRef.current = L.tileLayer(
         'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
         {
