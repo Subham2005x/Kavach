@@ -12,6 +12,5 @@ export default defineConfig({
   },
   define: {
     'process.env': {}
-  },
-  envPrefix: 'REACT_APP_', // Allow REACT_APP_ prefix like Create React App
+  }
 })
