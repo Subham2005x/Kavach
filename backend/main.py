@@ -41,12 +41,13 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://your-project.web.app",           # Firebase Hosting URL
-        "https://your-project.firebaseapp.com",   # Alternative Firebase URL
+        "https://kavach-ffc75.web.app",           # Firebase Hosting URL
+        "https://kavach-ffc75.firebaseapp.com",   # Alternative Firebase URL
         "http://localhost:5173",                  # Vite development
         "http://localhost:3000",                  # Alternative port
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "*",  # Allow all origins for now (remove in production)
     ],
     allow_credentials=True,
     allow_methods=["*"],
