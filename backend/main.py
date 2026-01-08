@@ -945,8 +945,14 @@ async def get_verification_status(user_id: str = "default"):
         }
     return {"status": "success", "verified": False}
 
-# Static Files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-@app.get("/")
-async def index(): return FileResponse('static/index.html')
+# Static Files (optional - only if directory exists)
+import os.path
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+    @app.get("/")
+    async def index(): return FileResponse('static/index.html')
+else:
+    @app.get("/")
+    async def root():
+        return {"message": "Kavach Backend API", "status": "running", "frontend": "https://kavach-ffc75.web.app"}
 
