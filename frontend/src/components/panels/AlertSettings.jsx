@@ -29,7 +29,6 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
   const [otpSent, setOtpSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
-  const [demoOTP, setDemoOTP] = useState(''); // For demo mode
 
   useEffect(() => {
     if (isOpen) {
@@ -148,12 +147,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       if (data.status === 'success') {
         setOtpSent(true);
         setShowOTPModal(true);
-        if (data.demo_otp) {
-          setDemoOTP(data.demo_otp);
-          alert(`📱 Demo Mode\n\nYour verification code is: ${data.demo_otp}\n\n(In production, this will be sent via SMS)`);
-        } else {
-          alert(`✅ Verification code sent to ${settings.phone}\n\nPlease check your messages.`);
-        }
+        alert(`✅ Verification code sent to ${settings.phone}\n\nPlease check your messages.`);
       } else {
         alert('❌ Failed to send OTP: ' + data.message);
       }
@@ -616,18 +610,6 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
               <p style={{marginBottom: '16px', color: '#64748b'}}>
                 Enter the 6-digit code sent to <strong>{settings.phone}</strong>
               </p>
-              {demoOTP && (
-                <div style={{
-                  padding: '12px',
-                  background: '#fef3c7',
-                  border: '1px solid #fbbf24',
-                  borderRadius: '8px',
-                  marginBottom: '16px',
-                  fontSize: '14px'
-                }}>
-                  <strong>Demo Mode:</strong> Your OTP is <strong>{demoOTP}</strong>
-                </div>
-              )}
               <input
                 type="text"
                 className="otp-input"

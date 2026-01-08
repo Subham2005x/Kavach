@@ -6,6 +6,7 @@ import numpy as np
 import time
 import smtplib
 import random
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from google import genai
@@ -18,6 +19,13 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from dotenv import load_dotenv
 from functools import lru_cache
 from datetime import datetime, timedelta
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # --- 1. CONFIG & API KEYS ---
 load_dotenv()  # Load environment variables from .env file
@@ -33,8 +41,10 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",  # Vite default
-        "http://localhost:3000",  # Alternative port
+        "https://your-project.web.app",           # Firebase Hosting URL
+        "https://your-project.firebaseapp.com",   # Alternative Firebase URL
+        "http://localhost:5173",                  # Vite development
+        "http://localhost:3000",                  # Alternative port
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
     ],
@@ -193,7 +203,7 @@ Keep response under 50 words, professional tone."""
         return {"explanation": formatted_text}
     except Exception as e:
         error_msg = str(e)
-        print(f"Gemini API Error: {error_msg}")
+        logger.error(f"Gemini API Error: {error_msg}")
         
         # Provide intelligent fallback
         fallback = generate_fallback_explanation(landslide, slope, rainfall)
@@ -373,7 +383,7 @@ async def weather_forecast(lat: float, lon: float):
             }
             
     except Exception as e:
-        print(f"Weather forecast error: {e}")
+        logger.error(f"Weather forecast error: {e}")
         return {"status": "error", "message": str(e)}
 
 @app.get("/safe_zones")
@@ -460,7 +470,7 @@ async def get_safe_zones(lat: float, lon: float, radius: float = 5.0):
             }
             
     except Exception as e:
-        print(f"Safe zones error: {e}")
+        logger.error(f"Safe zones error: {e}")
         return {"status": "error", "message": str(e)}
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -531,7 +541,7 @@ async def get_local_news(lat: float, lon: float):
                 }
                 
     except Exception as e:
-        print(f"News fetch error: {e}")
+        logger.error(f"News fetch error: {e}")
         return {
             "status": "success",
             "location": location_name if 'location_name' in locals() else "Selected Area",
@@ -580,7 +590,7 @@ async def send_email_alert(to_email: str, alert_data: dict):
         sender_password = os.getenv("SENDER_PASSWORD", "")
         
         if not sender_email or not sender_password:
-            print("Email credentials not configured in .env file")
+            logger.warning("Email credentials not configured")
             return False
         
         # Create message
@@ -616,10 +626,10 @@ async def send_email_alert(to_email: str, alert_data: dict):
             server.login(sender_email, sender_password)
             server.send_message(msg)
         
-        print(f"✅ Email sent to: {to_email}")
+        logger.info(f"Email alert sent to: {to_email}")
         return True
     except Exception as e:
-        print(f"❌ Email send error: {e}")
+        logger.error(f"Email send error: {e}")
         return False
 
 async def send_sms_alert(to_phone: str, alert_data: dict):
@@ -639,10 +649,10 @@ async def send_sms_alert(to_phone: str, alert_data: dict):
                     from_=twilio_phone,
                     to=to_phone if to_phone.startswith('+') else f"+91{to_phone}"
                 )
-                print(f"✅ SMS sent via Twilio to: {to_phone} (SID: {message.sid})")
+                logger.info(f"SMS alert sent via Twilio to: {to_phone}")
                 return True
             except Exception as twilio_error:
-                print(f"❌ Twilio error: {twilio_error}")
+                logger.error(f"Twilio error: {twilio_error}")
         
         # Option 2: Using Fast2SMS (India-specific - REQUIRES PAYMENT)
         # COMMENTED OUT - Requires 100 INR minimum payment
@@ -679,17 +689,12 @@ async def send_sms_alert(to_phone: str, alert_data: dict):
         #         else:
         #             print(f"❌ SMS send failed: {response.text}")
         
-        # Fallback: Demo mode - Log the SMS
-        print(f"📱 SMS ALERT (DEMO MODE)")
-        print(f"   To: {to_phone}")
-        print(f"   Level: {alert_data['level']}")
-        print(f"   Type: {alert_data['type']}")
-        print(f"   Message: {alert_data['message']}")
-        print(f"   Location: {alert_data['location']}")
-        return True
+        # SMS service not configured
+        logger.warning(f"SMS service unavailable - Alert not sent to {to_phone}")
+        return False
             
     except Exception as e:
-        print(f"❌ SMS send error: {e}")
+        logger.error(f"SMS send error: {e}")
         return False
 
 @app.post("/alert/settings")
@@ -881,27 +886,22 @@ async def send_verification_otp(data: dict = Body(...)):
                 from_=twilio_phone,
                 to=phone if phone.startswith('+') else f"+91{phone}"
             )
-            print(f"✅ OTP sent via Twilio to: {phone} (SID: {message.sid})")
+            logger.info(f"OTP sent via Twilio to: {phone}")
             return {
                 "status": "success",
-                "message": f"Verification code sent to {phone}",
-                "demo_otp": otp  # REMOVE THIS IN PRODUCTION!
+                "message": f"Verification code sent to {phone}"
             }
         else:
-            # Demo mode - return OTP directly
-            print(f"📱 DEMO MODE - OTP for {phone}: {otp}")
+            logger.warning("Twilio not configured - OTP cannot be sent")
             return {
-                "status": "success",
-                "message": "Demo mode - OTP not sent",
-                "demo_otp": otp  # Show OTP in demo mode
+                "status": "error",
+                "message": "SMS service not configured. Please contact administrator."
             }
     except Exception as e:
-        print(f"❌ Error sending OTP: {e}")
-        # Still save OTP for demo purposes
+        logger.error(f"Error sending OTP: {e}")
         return {
-            "status": "success",
-            "message": f"OTP generation successful (SMS failed: {str(e)})",
-            "demo_otp": otp  # Show OTP when SMS fails
+            "status": "error",
+            "message": "Failed to send verification code. Please try again later."
         }
 
 @app.post("/alert/verify_otp")
