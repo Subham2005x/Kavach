@@ -21,7 +21,7 @@ const LayerToggle = ({ layers, onToggle }) => {
         fontWeight: 600,
         color: '#f1f5f9',
         marginBottom: 12,
-        fontSize: 15,
+        fontSize: 16,
         letterSpacing: '0.3px'
       }}>Map Layers</h3>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
@@ -61,7 +61,7 @@ const LayerToggle = ({ layers, onToggle }) => {
           >
             <div style={{ fontSize: 24 }}>{layer.icon}</div>
             <span style={{
-              fontSize: 11,
+              fontSize: 15,
               color: layers[layer.id] ? '#e0f2fe' : '#94a3b8',
               fontWeight: 500,
               textAlign: 'center'

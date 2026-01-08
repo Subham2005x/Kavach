@@ -180,7 +180,7 @@ const WeatherPanel = ({ simulatedRainfall, location }) => {
 
         {/* Status indicator */}
         <div style={{
-          fontSize: 11,
+          fontSize: 13,
           color: '#64748b',
           textAlign: 'center',
           paddingTop: 8,

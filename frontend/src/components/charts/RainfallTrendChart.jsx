@@ -75,10 +75,10 @@ const RainfallTrendChart = ({ simulatedRainfall, location }) => {
   const totalAccumulated = accumulated;
 
   // Chart dimensions
-  const width = 500;
-  const height = 180;
+  const width = 300;
+  const height = 190;
   const padding = 40;
-  const chartWidth = width - 2 * padding;
+  const chartWidth = width - 1 * padding;
   const chartHeight = height - 2 * padding;
 
   // Scales
@@ -280,14 +280,14 @@ const RainfallTrendChart = ({ simulatedRainfall, location }) => {
         background: maxRainfall > 100 ? 'rgba(239, 68, 68, 0.1)' :
                    maxRainfall > 60 ? 'rgba(251, 191, 36, 0.1)' : 'rgba(34, 197, 94, 0.1)',
         borderLeft: `3px solid ${maxRainfall > 100 ? '#ef4444' : maxRainfall > 60 ? '#fbbf24' : '#22c55e'}`,
-        fontSize: '12px',
+        fontSize: '14px',
         color: '#cbd5e1'
       }}>
         <strong>
           {maxRainfall > 100 ? '⚠️ Heavy Rainfall Warning' : 
            maxRainfall > 60 ? '⚡ Moderate Rainfall Expected' : '✓ Light Rainfall Predicted'}
         </strong>
-        <div style={{ marginTop: '4px', fontSize: '11px', color: '#94a3b8' }}>
+        <div style={{ marginTop: '4px', fontSize: '14px', color: '#94a3b8' }}>
           {maxRainfall > 100 ? 'High risk of flash floods and landslides' :
            maxRainfall > 60 ? 'Monitor conditions closely' : 'Normal weather conditions'}
         </div>

@@ -211,7 +211,7 @@ export default function Dashboard() {
         {/* LEFT: Logo + Use My Location */}
         <div className="header-left" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div className="header-logo">
-            <div className="logo-icon">K</div>
+            <div className="logo-icon">🛡</div>
             <div>
               <div className="logo-text-title">Kavach</div>
               <div className="logo-text-subtitle">Disaster Risk Intelligence</div>

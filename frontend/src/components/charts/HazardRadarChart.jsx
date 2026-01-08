@@ -63,7 +63,7 @@ const HazardRadarChart = ({ riskData, simulatedRainfall }) => {
         <Activity size={18} color="#8b5cf6" /> {/* was 20 */}
         <h3
           style={{
-            fontSize: "13px", // was 15px
+            fontSize: "16px", // was 15px
             fontWeight: 600,
             color: "#e2e8f0",
             margin: 0,
@@ -152,7 +152,7 @@ const HazardRadarChart = ({ riskData, simulatedRainfall }) => {
                   x={labelX}
                   y={labelY}
                   fill="#cbd5e1"
-                  fontSize="10" // was 11
+                  fontSize="13" // was 11
                   fontWeight="600"
                   textAnchor="middle"
                   dominantBaseline="middle"
@@ -199,7 +199,7 @@ const HazardRadarChart = ({ riskData, simulatedRainfall }) => {
               display: "flex",
               alignItems: "center",
               gap: "8px",
-              fontSize: "11px", // was 12px
+              fontSize: "14px", // was 12px
             }}
           >
             <div
