@@ -47,7 +47,7 @@ env:
       - RUNTIME
   
   - variable: VITE_API_URL
-    value: http://localhost:8000
+    value: https://kavach-4pqh.onrender.com
     availability:
       - BUILD
       - RUNTIME
