@@ -631,52 +631,53 @@ user_alert_settings = {}
 
 # SMS and Email sending functions
 async def send_email_alert(to_email: str, alert_data: dict):
-    """Send email alert using SMTP"""
+    """Send email alert using Resend API"""
     try:
-        # Email configuration from environment variables
-        smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        resend_api_key = os.getenv("RESEND_API_KEY", "")
         sender_email = os.getenv("SENDER_EMAIL", "")
-        sender_password = os.getenv("SENDER_PASSWORD", "")
         
-        if not sender_email or not sender_password:
-            logger.warning("Email credentials not configured")
+        if not resend_api_key:
+            logger.warning("Resend API key not configured")
             return False
         
-        # Create message
-        msg = MIMEMultipart()
-        msg['From'] = sender_email
-        msg['To'] = to_email
-        msg['Subject'] = f"🚨 {alert_data['level']} Alert: {alert_data['type']}"
+        import resend
+        resend.api_key = resend_api_key
         
-        # Email body
-        body = f"""
-        Kavach Disaster Alert System
-        
-        Alert Level: {alert_data['level']}
-        Alert Type: {alert_data['type']}
-        
-        {alert_data['message']}
-        
-        Location: {alert_data['location']}
-        Current Value: {alert_data['value']}
-        Your Threshold: {alert_data['threshold']}
-        Time: {alert_data['timestamp']}
-        
-        Please take necessary precautions and stay safe.
-        
-        - Kavach Team
+        # Email HTML body
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h2 style="color: #d32f2f; margin-top: 0;">🚨 Kavach Disaster Alert</h2>
+                <div style="background-color: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 20px 0;">
+                    <p style="margin: 5px 0;"><strong>Alert Level:</strong> <span style="color: #d32f2f;">{alert_data['level']}</span></p>
+                    <p style="margin: 5px 0;"><strong>Alert Type:</strong> {alert_data['type']}</p>
+                </div>
+                <p style="font-size: 16px; line-height: 1.6;">{alert_data['message']}</p>
+                <div style="margin: 20px 0; padding: 15px; background-color: #e3f2fd; border-radius: 5px;">
+                    <p style="margin: 5px 0;"><strong>📍 Location:</strong> {alert_data['location']}</p>
+                    <p style="margin: 5px 0;"><strong>📊 Current Value:</strong> {alert_data['value']}</p>
+                    <p style="margin: 5px 0;"><strong>⚠️ Your Threshold:</strong> {alert_data['threshold']}</p>
+                    <p style="margin: 5px 0;"><strong>🕐 Time:</strong> {alert_data['timestamp']}</p>
+                </div>
+                <p style="color: #d32f2f; font-weight: bold;">⚠️ Please take necessary precautions and stay safe.</p>
+                <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 20px 0;">
+                <p style="color: #666; font-size: 12px; margin: 0;">- Kavach Disaster Alert Team</p>
+            </div>
+        </body>
+        </html>
         """
         
-        msg.attach(MIMEText(body, 'plain'))
+        params = {
+            "from": "Kavach Alerts <onboarding@resend.dev>",  # Use Resend's test domain
+            "to": [to_email],
+            "subject": f"🚨 {alert_data['level']} Alert: {alert_data['type']}",
+            "html": html_content,
+        }
         
-        # Send email
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()
-            server.login(sender_email, sender_password)
-            server.send_message(msg)
-        
-        logger.info(f"Email alert sent to: {to_email}")
+        logger.info(f"📧 Attempting to send email to: {to_email}")
+        email = resend.Emails.send(params)
+        logger.info(f"✅ EMAIL SENT SUCCESSFULLY to: {to_email} (ID: {email['id']})")
         return True
     except Exception as e:
         logger.error(f"Email send error: {e}")
@@ -770,6 +771,15 @@ async def get_alert_settings(user_id: str = "default"):
     })
     return {"status": "success", "settings": settings}
 
+@app.get("/alert/debug")
+async def debug_alert_settings():
+    """Debug endpoint to see all stored settings"""
+    return {
+        "status": "success",
+        "all_users": list(user_alert_settings.keys()),
+        "settings_by_user": user_alert_settings
+    }
+
 @app.post("/alert/check")
 async def check_alerts(data: dict = Body(...), user_id: str = "default"):
     """Check if current conditions trigger an alert"""
@@ -778,9 +788,15 @@ async def check_alerts(data: dict = Body(...), user_id: str = "default"):
     rainfall = data.get("rainfall", 0)
     location = data.get("location", "Unknown Location")
     
+    logger.info(f"🔍 Alert check requested for user: {user_id}")
+    logger.info(f"📊 Risk values - Landslide: {landslide_risk}%, Flood: {flood_risk}%, Rainfall: {rainfall}mm")
+    
     settings = user_alert_settings.get(user_id, {})
+    logger.info(f"⚙️ User settings: {settings}")
+    
     if not settings:
-        return {"status": "success", "alerts": []}
+        logger.warning(f"⚠️ No settings found for user {user_id}")
+        return {"status": "success", "alerts": [], "message": "No settings configured"}
     
     alerts = []
     current_time = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -834,15 +850,47 @@ async def check_alerts(data: dict = Body(...), user_id: str = "default"):
         alert_history.append(alert)
     
     # Send actual SMS/Email notifications
+    email_sent = False
+    sms_sent = False
+    
     if alerts:
+        logger.info(f"🚨 {len(alerts)} alert(s) triggered for user {user_id}")
+        logger.info(f"🔐 Email enabled: {settings.get('enable_email')}, Email address: {settings.get('email')}")
+        logger.info(f"🔐 SMS enabled: {settings.get('enable_sms')}, Phone: {settings.get('phone')}")
+        
         for alert in alerts:
             if settings.get("enable_email") and settings.get("email"):
-                await send_email_alert(settings.get("email"), alert)
+                logger.info(f"📧 Attempting to send email to: {settings.get('email')}")
+                email_result = await send_email_alert(settings.get("email"), alert)
+                if email_result:
+                    email_sent = True
+                    logger.info(f"✅ Email sent successfully!")
+                else:
+                    logger.error(f"❌ Email failed to send!")
+            else:
+                logger.warning(f"⚠️ Email notification skipped - enabled: {settings.get('enable_email')}, has email: {bool(settings.get('email'))}")
             
             if settings.get("enable_sms") and settings.get("phone"):
-                await send_sms_alert(settings.get("phone"), alert)
+                logger.info(f"📱 Attempting to send SMS to: {settings.get('phone')}")
+                sms_result = await send_sms_alert(settings.get("phone"), alert)
+                if sms_result:
+                    sms_sent = True
+                    logger.info(f"✅ SMS sent successfully!")
+                else:
+                    logger.error(f"❌ SMS failed to send!")
+            else:
+                logger.warning(f"⚠️ SMS notification skipped - enabled: {settings.get('enable_sms')}, has phone: {bool(settings.get('phone'))}")
+    else:
+        logger.info(f"ℹ️ No alerts triggered for user {user_id} (values below thresholds)")
     
-    return {"status": "success", "alerts": alerts}
+    return {
+        "status": "success", 
+        "alerts": alerts,
+        "notifications": {
+            "email_sent": email_sent,
+            "sms_sent": sms_sent
+        }
+    }
 
 @app.get("/alert/history")
 async def get_alert_history(limit: int = 50):

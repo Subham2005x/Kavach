@@ -623,3 +623,25 @@
   letter-spacing: normal;
   color: rgba(255, 255, 255, 0.4);
 }
+
+/* Spinner animation for loading states */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+/* Disabled button state */
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}

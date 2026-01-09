@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Mail, Phone, AlertTriangle, Check, X, History, Trash2, MapPin, Shield } from 'lucide-react';
+import { Bell, Mail, Phone, AlertTriangle, Check, X, History, Trash2, MapPin, Shield, Loader } from 'lucide-react';
 import { db, auth } from '../../config/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import './AlertSettings.css';
@@ -24,6 +24,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
   const [alertHistory, setAlertHistory] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [useCurrentLocation, setUseCurrentLocation] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   
   // OTP Verification states
   const [showOTPModal, setShowOTPModal] = useState(false);
@@ -207,6 +208,10 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
         return;
       }
       
+      const userId = user?.uid || 'default';
+      console.log('💾 Saving settings for user:', userId);
+      console.log('📧 Settings to save:', settings);
+      
       if (user) {
         // Save to Firebase Firestore
         const userDocRef = doc(db, 'users', user.uid);
@@ -221,19 +226,23 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       }
       
       // Also save to backend for API access
-      const response = await fetch(`${API_BASE_URL}/alert/settings?user_id=${user?.uid || 'default'}`, {
+      console.log('📡 Sending to backend API:', `${API_BASE_URL}/alert/settings?user_id=${userId}`);
+      const response = await fetch(`${API_BASE_URL}/alert/settings?user_id=${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
       });
       
       const data = await response.json();
+      console.log('📥 Backend response:', data);
+      
       if (data.status === 'success') {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
+        console.log('✅ Settings saved successfully to backend!');
       }
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('❌ Error saving settings:', error);
       alert('❌ Error saving settings. Please try again.');
     }
   };
@@ -266,9 +275,16 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       rainfall: 120
     };
     
+    setIsTesting(true);
     try {
       const user = auth.currentUser;
       const userId = user?.uid || 'default';
+      
+      console.log('🧪 Testing alerts for user:', userId);
+      console.log('📊 Test risk data:', testRiskData);
+      console.log('⚙️ Current settings:', settings);
+      console.log('📧 Email enabled?', settings.enable_email, '| Email:', settings.email);
+      console.log('📱 SMS enabled?', settings.enable_sms, '| Phone:', settings.phone);
       
       const response = await fetch(`${API_BASE_URL}/alert/check?user_id=${userId}`, {
         method: 'POST',
@@ -281,17 +297,40 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
         })
       });
       const data = await response.json();
+      console.log('📥 Alert check response:', data);
+      
       if (data.status === 'success' && data.alerts.length > 0) {
         loadHistory();
-        const emailMsg = settings.enable_email && settings.email ? `\n📧 Email sent to: ${settings.email}` : '';
-        const smsMsg = settings.enable_sms && settings.phone ? `\n📱 SMS sent to: ${settings.phone}` : '';
-        alert(`✅ ${data.alerts.length} alert(s) triggered!${emailMsg}${smsMsg}\n\nCheck your inbox!`);
+        const notifications = data.notifications || {};
+        const emailActuallySent = notifications.email_sent;
+        const smsActuallySent = notifications.sms_sent;
+        
+        console.log('✅ Alerts triggered:', data.alerts.length);
+        console.log('📧 Email actually sent?', emailActuallySent);
+        console.log('📱 SMS actually sent?', smsActuallySent);
+        
+        const emailMsg = emailActuallySent ? `\n📧 Email sent to: ${settings.email}` : '';
+        const smsMsg = smsActuallySent ? `\n📱 SMS sent to: ${settings.phone}` : '';
+        
+        let message = `✅ ${data.alerts.length} alert(s) triggered!${emailMsg}${smsMsg}`;
+        
+        if (!emailActuallySent && settings.enable_email) {
+          message += '\n\n⚠️ Email was NOT sent - check backend logs';
+        }
+        if (!smsActuallySent && settings.enable_sms) {
+          message += '\n\n⚠️ SMS was NOT sent - check backend logs';
+        }
+        
+        alert(message);
       } else {
+        console.log('⚠️ No alerts triggered or error:', data);
         alert('⚠️ No alerts triggered.\n\nCurrent conditions are below your thresholds.\n\nTip: Lower your thresholds temporarily to test the alert system.');
       }
     } catch (error) {
       console.error('Error checking alerts:', error);
       alert('❌ Error checking alerts. Please try again.');
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -540,8 +579,20 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
             </div>
 
             <div className="alert-actions">
-              <button className="alert-btn-secondary" onClick={checkCurrentAlerts}>
-                Test Alert
+              <button 
+                className="alert-btn-secondary" 
+                onClick={checkCurrentAlerts}
+                disabled={isTesting}
+                style={{ opacity: isTesting ? 0.7 : 1, cursor: isTesting ? 'not-allowed' : 'pointer' }}
+              >
+                {isTesting ? (
+                  <>
+                    <Loader size={16} className="spinner" />
+                    Sending Alerts...
+                  </>
+                ) : (
+                  'Test Alert'
+                )}
               </button>
               <button className="alert-btn-primary" onClick={handleSave}>
                 {showSuccess ? <><Check size={16} /> Saved!</> : 'Save Settings'}
