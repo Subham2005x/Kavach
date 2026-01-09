@@ -1,8 +1,6 @@
 # 🛡️ Kavach - Disaster Alert & Risk Assessment System
 
-![Kavach Banner](https://img.shields.io/badge/Kavach-Disaster%20Alert%20System-blue?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-1.0.0-orange?style=for-the-badge)
+
 
 > **Kavach** (Sanskrit: कवच, meaning "Shield" or "Armor") is an intelligent disaster risk assessment and alert system that helps communities prepare for and respond to natural disasters including floods, landslides, and extreme weather events.
 
