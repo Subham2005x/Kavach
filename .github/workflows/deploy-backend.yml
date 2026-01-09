@@ -1,5 +1,6 @@
 name: Deploy Backend to Cloud Run
-
+# This workflow builds and deploys the backend Docker image to Google Cloud Run
+# It triggers on pushes to the 'main' branch affecting the 'backend/' directory
 on:
   push:
     branches:
