@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Newspaper, ExternalLink, Calendar, TrendingUp } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const LocalNews = ({ location }) => {
   const [news, setNews] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +24,7 @@ const LocalNews = ({ location }) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8000/local_news?lat=${lat}&lon=${lng}`
+          `${API_BASE_URL}/local_news?lat=${lat}&lon=${lng}`
         );
         const data = await response.json();
         

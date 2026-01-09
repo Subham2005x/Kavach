@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Navigation, Hospital, Shield, ExternalLink } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const SafeZones = ({ location }) => {
   const [safeZones, setSafeZones] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +22,7 @@ const SafeZones = ({ location }) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8000/safe_zones?lat=${lat}&lon=${lng}&radius=5`
+          `${API_BASE_URL}/safe_zones?lat=${lat}&lon=${lng}&radius=5`
         );
         const data = await response.json();
         

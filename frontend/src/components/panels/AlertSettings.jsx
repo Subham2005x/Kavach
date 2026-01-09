@@ -4,6 +4,8 @@ import { db, auth } from '../../config/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import './AlertSettings.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
   const [settings, setSettings] = useState({
     email: '',
@@ -43,7 +45,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       const user = auth.currentUser;
       if (!user) return;
       
-      const response = await fetch(`http://localhost:8000/alert/verification_status?user_id=${user.uid}`);
+      const response = await fetch(`${API_BASE_URL}/alert/verification_status?user_id=${user.uid}`);
       const data = await response.json();
       if (data.status === 'success' && data.verified) {
         setIsVerified(true);
@@ -102,7 +104,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       console.error('Error loading settings from Firebase:', error);
       // Fallback to backend API
       try {
-        const response = await fetch('http://localhost:8000/alert/settings?user_id=default');
+        const response = await fetch(`${API_BASE_URL}/alert/settings?user_id=default`);
         const data = await response.json();
         if (data.status === 'success') {
           setSettings(data.settings);
@@ -115,7 +117,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
 
   const loadHistory = async () => {
     try {
-      const response = await fetch('http://localhost:8000/alert/history?limit=50');
+      const response = await fetch(`${API_BASE_URL}/alert/history?limit=50`);
       const data = await response.json();
       if (data.status === 'success') {
         setAlertHistory(data.alerts.reverse());
@@ -134,7 +136,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
     setOtpLoading(true);
     try {
       const user = auth.currentUser;
-      const response = await fetch('http://localhost:8000/alert/send_verification_otp', {
+      const response = await fetch(`${API_BASE_URL}/alert/send_verification_otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -168,7 +170,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
     setOtpLoading(true);
     try {
       const user = auth.currentUser;
-      const response = await fetch('http://localhost:8000/alert/verify_otp', {
+      const response = await fetch(`${API_BASE_URL}/alert/verify_otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -219,7 +221,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       }
       
       // Also save to backend for API access
-      const response = await fetch(`http://localhost:8000/alert/settings?user_id=${user?.uid || 'default'}`, {
+      const response = await fetch(`${API_BASE_URL}/alert/settings?user_id=${user?.uid || 'default'}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
@@ -268,7 +270,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
       const user = auth.currentUser;
       const userId = user?.uid || 'default';
       
-      const response = await fetch(`http://localhost:8000/alert/check?user_id=${userId}`, {
+      const response = await fetch(`${API_BASE_URL}/alert/check?user_id=${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -297,7 +299,7 @@ const AlertSettings = ({ isOpen, onClose, riskData, location }) => {
     if (!confirm('Are you sure you want to clear all alert history?')) return;
     
     try {
-      const response = await fetch('http://localhost:8000/alert/history', {
+      const response = await fetch(`${API_BASE_URL}/alert/history`, {
         method: 'DELETE'
       });
       const data = await response.json();

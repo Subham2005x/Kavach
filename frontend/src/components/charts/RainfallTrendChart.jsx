@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { CloudRain } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 const RainfallTrendChart = ({ simulatedRainfall, location }) => {
   const [forecastData, setForecastData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,7 +16,7 @@ const RainfallTrendChart = ({ simulatedRainfall, location }) => {
       setIsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:8000/weather_forecast?lat=${lat}&lon=${lng}`
+          `${API_BASE_URL}/weather_forecast?lat=${lat}&lon=${lng}`
         );
         const data = await response.json();
         
