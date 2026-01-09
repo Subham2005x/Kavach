@@ -25,6 +25,8 @@ const RiskSummaryPanel = ({ location, simulatedRainfall, riskLevel }) => {
       backdropFilter: 'blur(12px)',
       borderRadius: 12,
       padding: 16,
+      // maxHeight:300,
+      minHeight:300,
       border: '1px solid rgba(51,65,85,0.5)'
     }}>
       <h3 style={{

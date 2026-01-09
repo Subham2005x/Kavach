@@ -56,7 +56,7 @@ const SafeZones = ({ location }) => {
       borderRadius: 12,
       padding: 16,
       border: '1px solid rgba(51,65,85,0.5)',
-      maxHeight: 500,
+      maxHeight: 730,
       overflowY: 'auto'
     }}
     className="custom-scrollbar">

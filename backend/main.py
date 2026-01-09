@@ -2,6 +2,7 @@ import os
 import math
 import joblib
 import httpx
+import asyncio
 import numpy as np
 import time
 import smtplib
@@ -288,44 +289,48 @@ def beautify_ai_response(raw_text):
 def generate_fallback_explanation(landslide_risk, slope, rainfall):
     """Generate a detailed rule-based explanation when AI is unavailable"""
     
-    # Determine risk classifications
-    risk_level = "high" if landslide_risk > 70 else "moderate" if landslide_risk > 40 else "low"
-    slope_desc = "steep" if slope > 30 else "moderately inclined" if slope > 15 else "gentle"
-    rain_desc = "heavy" if rainfall > 50 else "moderate" if rainfall > 20 else "light" if rainfall > 0 else "no"
+    # Determine risk classifications with HTML formatting
+    risk_level_html = ""
+    if landslide_risk > 70:
+        risk_level_html = "<strong style='color: #ef4444;'>high risk conditions</strong>"
+    elif landslide_risk > 40:
+        risk_level_html = "<strong style='color: #f59e0b;'>moderate risk conditions</strong>"
+    else:
+        risk_level_html = "<strong style='color: #10b981;'>low risk conditions</strong>"
     
-    # Build comprehensive risk assessment
-    assessment = f"Current landslide risk stands at {landslide_risk:.1f}%, indicating {risk_level} risk conditions. \n "
+    # Build comprehensive risk assessment with HTML formatting
+    assessment = f"Current landslide risk stands at <strong>{landslide_risk:.1f}%</strong>, indicating {risk_level_html}. "
     
     # Add slope analysis
     if slope > 30:
-        assessment += f"The terrain features a steep {slope}° slope, which significantly increases ground instability and susceptibility to mass movements. "
+        assessment += f"The terrain features a steep <strong>{slope}°</strong> slope, which significantly increases ground instability and susceptibility to mass movements. "
     elif slope > 15:
-        assessment += f"The terrain has a moderately inclined slope of {slope}°, creating potential for landslides under adverse conditions. "
+        assessment += f"The terrain has a moderately inclined slope of <strong>{slope}°</strong>, creating potential for landslides under adverse conditions. "
     else:
-        assessment += f"The relatively gentle {slope}° slope provides some natural stability against landslides. "
+        assessment += f"The relatively gentle <strong>{slope}°</strong> slope provides some natural stability against landslides. "
     
     # Add rainfall impact analysis
     if rainfall > 50:
-        assessment += f"Heavy rainfall at {rainfall}mm/hr is rapidly saturating the soil, dramatically increasing failure risk through pore pressure buildup and reduced soil cohesion."
+        assessment += f"Heavy rainfall at <strong>{rainfall}mm/hr</strong> is rapidly saturating the soil, dramatically increasing failure risk through pore pressure buildup and reduced soil cohesion."
     elif rainfall > 20:
-        assessment += f"Moderate rainfall ({rainfall}mm/hr) is progressively saturating the ground, raising concerns about slope stability over time."
+        assessment += f"Moderate rainfall (<strong>{rainfall}mm/hr</strong>) is progressively saturating the ground, raising concerns about slope stability over time."
     elif rainfall > 0:
-        assessment += f"Light rainfall ({rainfall}mm/hr) presents minimal immediate threat but requires monitoring if conditions intensify."
+        assessment += f"Light rainfall (<strong>{rainfall}mm/hr</strong>) presents minimal immediate threat but requires monitoring if conditions intensify."
     else:
-        assessment += "Current dry conditions provide a favorable factor, as soil moisture levels are not being elevated by precipitation."
+        assessment += "Current <strong>dry conditions</strong> provide a favorable factor, as soil moisture levels are not being elevated by precipitation."
     
     # Determine geological perspective and safety action based on risk level
     if landslide_risk > 70:
-        perspective = "\n\nGeological Perspective: Critical instability conditions exist. The combination of terrain geometry and environmental factors creates imminent failure potential requiring immediate protective response."
-        safety_tip = "Evacuate to higher, stable ground immediately. Avoid valleys, drainage paths, and steep slopes. Alert local authorities and neighbors"
+        perspective = "<div style='margin-top: 16px; padding: 12px; background: rgba(51, 65, 85, 0.3); border-left: 3px solid #ef4444; border-radius: 4px;'><strong style='color: #fca5a5;'>Geological Perspective:</strong> Critical instability conditions exist. The combination of terrain geometry and environmental factors creates imminent failure potential requiring immediate protective response.</div>"
+        safety_tip = "<div class='safety-action'><strong>Safety Action:</strong> Evacuate to higher, stable ground immediately. Avoid valleys, drainage paths, and steep slopes. Alert local authorities and neighbors.</div>"
     elif landslide_risk > 40:
-        perspective = "\n\nGeological Perspective: Moderate instability indicates the area is approaching threshold conditions where ground failure could occur. Preventative measures and continuous monitoring are essential."
-        safety_tip = "Identify and prepare evacuation routes. Monitor for warning signs like ground cracks, tilting structures, or sudden water flow changes. Stay alert to weather updates"
+        perspective = "<div style='margin-top: 16px; padding: 12px; background: rgba(51, 65, 85, 0.3); border-left: 3px solid #f59e0b; border-radius: 4px;'><strong style='color: #fcd34d;'>Geological Perspective:</strong> Moderate instability indicates the area is approaching threshold conditions where ground failure could occur. Preventative measures and continuous monitoring are essential.</div>"
+        safety_tip = "<div class='safety-action'><strong>Safety Action:</strong> Identify and prepare evacuation routes. Monitor for warning signs like ground cracks, tilting structures, or sudden water flow changes. Stay alert to weather updates.</div>"
     else:
-        perspective = "\n\nGeological Perspective: Current conditions show acceptable stability margins. While risk exists in any mountain terrain, immediate hazard probability remains low under present circumstances."
-        safety_tip = "Maintain situational awareness and keep emergency supplies accessible. Stay informed through local disaster management channels"
+        perspective = "<div style='margin-top: 16px; padding: 12px; background: rgba(51, 65, 85, 0.3); border-left: 3px solid #10b981; border-radius: 4px;'><strong style='color: #86efac;'>Geological Perspective:</strong> Current conditions show acceptable stability margins. While risk exists in any mountain terrain, immediate hazard probability remains low under present circumstances.</div>"
+        safety_tip = "<div class='safety-action'><strong>Safety Action:</strong> Maintain situational awareness and keep emergency supplies accessible. Stay informed through local disaster management channels.</div>"
     
-    return f"{assessment}{perspective}\n\n  🛡️ Safety Action: {safety_tip}."
+    return f"<div style='line-height: 1.8;'>{assessment}</div>{perspective}{safety_tip}"
 
 @app.get("/weather_forecast")
 async def weather_forecast(lat: float, lon: float):
@@ -398,7 +403,7 @@ async def get_safe_zones(lat: float, lon: float, radius: float = 5.0):
         overpass_url = "https://overpass-api.de/api/interpreter"
         
         query = f"""
-        [out:json][timeout:25];
+        [out:json][timeout:45];
         (
           node["amenity"="hospital"](around:{radius*1000},{lat},{lon});
           node["amenity"="police"](around:{radius*1000},{lat},{lon});
@@ -409,66 +414,110 @@ async def get_safe_zones(lat: float, lon: float, radius: float = 5.0):
         out body;
         """
         
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                overpass_url,
-                data=query,
-                timeout=30.0
-            )
-            
-            if response.status_code != 200:
-                return {"status": "error", "message": "Safe zones API unavailable"}
-            
-            data = response.json()
-            elements = data.get("elements", [])
-            
-            safe_zones = []
-            for elem in elements:
-                amenity = elem.get("tags", {}).get("amenity", elem.get("tags", {}).get("emergency", "unknown"))
-                name = elem.get("tags", {}).get("name", f"Unnamed {amenity}")
-                
-                # Calculate distance
-                lat2, lon2 = elem.get("lat", 0), elem.get("lon", 0)
-                distance = calculate_distance(lat, lon, lat2, lon2)
-                
-                # Categorize facility type
-                if amenity == "hospital":
-                    category = "Hospital"
-                    icon = "🏥"
-                elif amenity == "police":
-                    category = "Police Station"
-                    icon = "🚓"
-                elif amenity == "fire_station":
-                    category = "Fire Station"
-                    icon = "🚒"
-                elif amenity == "shelter":
-                    category = "Shelter"
-                    icon = "🏠"
-                elif amenity == "assembly_point":
-                    category = "Assembly Point"
-                    icon = "📍"
+        # Retry logic with exponential backoff
+        max_retries = 3
+        retry_delay = 2  # seconds
+        
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    response = await client.post(
+                        overpass_url,
+                        data=query
+                    )
+                    
+                    if response.status_code == 200:
+                        break
+                    elif response.status_code == 504:
+                        logger.warning(f"Overpass API timeout (attempt {attempt + 1}/{max_retries})")
+                        if attempt < max_retries - 1:
+                            await asyncio.sleep(retry_delay * (attempt + 1))
+                            continue
+                    else:
+                        logger.error(f"Overpass API error: {response.status_code}")
+                        if attempt < max_retries - 1:
+                            await asyncio.sleep(retry_delay)
+                            continue
+            except httpx.TimeoutException:
+                logger.warning(f"Overpass API request timeout (attempt {attempt + 1}/{max_retries})")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(retry_delay * (attempt + 1))
+                    continue
                 else:
-                    category = "Safe Zone"
-                    icon = "🛡️"
-                
-                safe_zones.append({
-                    "name": name,
-                    "category": category,
-                    "icon": icon,
-                    "lat": lat2,
-                    "lon": lon2,
-                    "distance": round(distance, 2),
-                    "address": elem.get("tags", {}).get("addr:full", "")
-                })
-            
-            # Sort by distance
-            safe_zones.sort(key=lambda x: x["distance"])
-            
+                    return {
+                        "status": "error",
+                        "message": "Safe zones API is currently unavailable. Please try again later.",
+                        "safe_zones": []
+                    }
+            except Exception as e:
+                logger.error(f"Overpass API request failed: {str(e)}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(retry_delay)
+                    continue
+                else:
+                    return {
+                        "status": "error",
+                        "message": "Safe zones API encountered an error",
+                        "safe_zones": []
+                    }
+        
+        if response.status_code != 200:
             return {
-                "status": "success",
-                "safe_zones": safe_zones[:15],  # Return top 15 closest
-                "total_found": len(safe_zones)
+                "status": "error",
+                "message": f"Safe zones API unavailable (HTTP {response.status_code})",
+                "safe_zones": []
             }
+        
+        data = response.json()
+        elements = data.get("elements", [])
+        
+        safe_zones = []
+        for elem in elements:
+            amenity = elem.get("tags", {}).get("amenity", elem.get("tags", {}).get("emergency", "unknown"))
+            name = elem.get("tags", {}).get("name", f"Unnamed {amenity}")
+            
+            # Calculate distance
+            lat2, lon2 = elem.get("lat", 0), elem.get("lon", 0)
+            distance = calculate_distance(lat, lon, lat2, lon2)
+            
+            # Categorize facility type
+            if amenity == "hospital":
+                category = "Hospital"
+                icon = "🏥"
+            elif amenity == "police":
+                category = "Police Station"
+                icon = "🚓"
+            elif amenity == "fire_station":
+                category = "Fire Station"
+                icon = "🚒"
+            elif amenity == "shelter":
+                category = "Shelter"
+                icon = "🏠"
+            elif amenity == "assembly_point":
+                category = "Assembly Point"
+                icon = "📍"
+            else:
+                category = "Safe Zone"
+                icon = "🛡️"
+            
+            safe_zones.append({
+                "name": name,
+                "category": category,
+                "icon": icon,
+                "lat": lat2,
+                "lon": lon2,
+                "distance": round(distance, 2),
+                "address": elem.get("tags", {}).get("addr:full", "")
+            })
+        
+        # Sort by distance
+        safe_zones.sort(key=lambda x: x["distance"])
+        
+        return {
+            "status": "success",
+            "safe_zones": safe_zones[:15],  # Return top 15 closest
+            "total_found": len(safe_zones)
+        }
             
     except Exception as e:
         logger.error(f"Safe zones error: {e}")

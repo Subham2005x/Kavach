@@ -678,6 +678,9 @@ export default function Dashboard() {
             <div className="feature-card-header">
               <span className="feature-card-icon">🤖</span>
               <h2 className="feature-card-title">AI Expert Analysis</h2>
+              <span className="ai-powered-badge">
+                Powered by Gemini Flash 2.5
+              </span>
             </div>
             <div className="feature-card-body">
               <div className="ai-panel-content">
@@ -687,7 +690,7 @@ export default function Dashboard() {
                     Generating expert analysis...
                   </div>
                 ) : aiExplanation ? (
-                  aiExplanation
+                  <div dangerouslySetInnerHTML={{ __html: aiExplanation }} />
                 ) : (
                   <div style={{
                     display: 'flex',

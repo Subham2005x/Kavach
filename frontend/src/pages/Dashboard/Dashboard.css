@@ -266,6 +266,32 @@
   font-size: 18px;
   font-weight: 600;
   color: #e2e8f0;
+  flex: 1;
+}
+
+.ai-powered-badge {
+  margin-left: auto;
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #a78bfa;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+  animation: glow 3s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.2);
+  }
+  50% {
+    box-shadow: 0 2px 12px rgba(139, 92, 246, 0.4);
+  }
 }
 
 .feature-card-body {
@@ -297,18 +323,18 @@
 
 .row-1-left {
   width: 30%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 .row-1-center {
   width: 40%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
   height: 800px;
 }
 
 .row-1-right {
   width: 30%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -316,7 +342,7 @@
 
 .row-1-right-top {
   flex: 1;
-  min-height: 0;
+  max-height: fit-content;
 }
 
 .row-1-right-bottom {
@@ -337,17 +363,17 @@
 
 .row-2-left {
   width: 33.33%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 .row-2-center {
   width: 33.33%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 .row-2-right {
   width: 33.33%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 /* ROW 3 */
@@ -368,12 +394,12 @@
 
 .row-3-center {
   width: 33.33%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 .row-3-right {
   width: 33.33%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 /* ROW 4 - EQUAL WIDTH */
@@ -389,12 +415,12 @@
 
 .row-4-left {
   width: 50%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 .row-4-right {
   width: 50%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 /* ROW 5 */
@@ -410,7 +436,7 @@
 
 .row-5-full {
   width: 100%;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */
 }
 
 /* ===== ROW 1 POSITIONING ===== */
@@ -577,25 +603,177 @@
 
 .ai-panel-content {
   font-size: 14px;
-  line-height: 1.6;
-  color: #cbd5e1;
+  line-height: 1.8;
+  color: #e2e8f0;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+  min-height: 200px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-panel-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(59, 130, 246, 0.5) 20%, 
+    rgba(99, 102, 241, 0.5) 50%, 
+    rgba(59, 130, 246, 0.5) 80%, 
+    transparent 100%
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.ai-panel-content p {
+  margin-bottom: 16px;
+}
+
+/* Style for risk percentage highlighting */
+.ai-panel-content strong {
+  color: #fbbf24;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.1);
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.ai-panel-content strong:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(251, 191, 36, 0.2);
+}
+
+/* Style for geological perspective section */
+.ai-panel-content em {
+  color: #94a3b8;
+  font-style: normal;
+  display: block;
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border-left: 4px solid #475569;
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-panel-content em::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #475569 0%, transparent 100%);
+}
+
+/* Style for safety action callout */
+.ai-panel-content .safety-action {
+  margin-top: 20px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.2) 0%, 
+    rgba(37, 99, 235, 0.15) 50%,
+    rgba(59, 130, 246, 0.1) 100%
+  );
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 10px;
+  border-left: 5px solid #3b82f6;
+  box-shadow: 
+    0 4px 12px rgba(59, 130, 246, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05);
+  position: relative;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.ai-panel-content .safety-action:hover {
+  transform: translateX(3px);
+  box-shadow: 
+    0 6px 16px rgba(59, 130, 246, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05);
+  border-left-width: 6px;
+}
+
+.ai-panel-content .safety-action::before {
+  content: '🛡️';
+  font-size: 20px;
+  margin-right: 10px;
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.ai-panel-content .safety-action strong {
+  color: #60a5fa;
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  font-size: 15px;
+  letter-spacing: 0.3px;
 }
 
 .ai-loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 16px;
   font-style: italic;
   color: #94a3b8;
+  padding: 40px 20px;
+  min-height: 200px;
 }
 
 .ai-loading-spinner {
-  width: 13px;
-  height: 13px;
-  border: 2px solid #60a5fa;
-  border-top-color: transparent;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #60a5fa;
+  border-right-color: #818cf8;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Terrain Profile */
@@ -644,6 +822,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
+  padding: 10px;
 }
 
 .risk-metric-item {
@@ -685,7 +864,9 @@
 
 .risk-recommendation {
   margin-top: 9px;
-  padding: 9px;
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 10px;
   border-left: 2px solid;
   border-radius: 3px;
 }
@@ -714,7 +895,7 @@
 /* Safety Advisory Section inside Risk Metrics */
 .safety-advisory-section {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 14px;
+  padding: 14px;
   margin-top: 14px;
 }
 

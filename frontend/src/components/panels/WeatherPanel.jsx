@@ -57,6 +57,7 @@ const WeatherPanel = ({ simulatedRainfall, location }) => {
       backdropFilter: 'blur(12px)',
       borderRadius: 12,
       padding: 16,
+      maxHeight: 400,
       border: '1px solid rgba(51,65,85,0.5)'
     }}>
       <h3 style={{
